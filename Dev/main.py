@@ -1,7 +1,8 @@
 import pygame
 from random import randrange
+from board import board
 
-class chessGame():
+class chess_game():
     def __init__(self):
         pygame.init()
 
@@ -13,6 +14,8 @@ class chessGame():
         self.black = (0, 0, 0)
         self.light_black = (50, 50, 50)
         self.white = (255, 255, 255)
+        self.beige = (204, 174, 92)
+        self.orange = (176, 106, 26)
         self.fps = 10
 
         self.is_menu = True
@@ -27,6 +30,8 @@ class chessGame():
         self.mouse = None
 
         self.selected_color = None
+
+        self.board = board()
 
     def main(self):
         is_running = True
@@ -66,7 +71,7 @@ class chessGame():
                                 self.is_menu = False
                                 self.is_game = True
 
-                            print(self.selected_color)
+                    self.mouse = None
 
             elif self.is_game:
                 self.show_game()
@@ -92,12 +97,12 @@ class chessGame():
         self.screen.blit(title_1, title_1_rect)
         self.screen.blit(title_2, title_2_rect)
 
-        pos_play = self.draw_button_centered("PLAY", 30, self.white, self.black, 100, 300, 200, 10)
-        pos_history = self.draw_button_centered("HISTORY", 30, self.white, self.black, 100, 600, 175, 10)
+        pos_play = self.draw_button("PLAY", 30, self.white, self.black, 100, 300, 200, 10, True)
+        pos_history = self.draw_button("HISTORY", 30, self.white, self.black, 100, 600, 175, 10, True)
         if self.select_color:
-            pos_white = self.draw_button("White", 30, self.black, self.white, 450, 380, 10, 10)
-            pos_random = self.draw_button_centered("Random", 30, self.white, self.light_black, 100, 380, 10, 10)
-            pos_black = self.draw_button("Black", 30, self.white, self.black, 750, 380, 10, 10)
+            pos_white = self.draw_button("White", 30, self.black, self.white, 450, 380, 10, 10, False)
+            pos_random = self.draw_button("Random", 30, self.white, self.light_black, 100, 380, 10, 10, True)
+            pos_black = self.draw_button("Black", 30, self.white, self.black, 750, 380, 10, 10, False)
             if self.color_button_positions:
                 self.color_button_positions = False
                 self.button_positions.append(pos_white)
@@ -113,26 +118,51 @@ class chessGame():
         pygame.display.set_caption("Game")
         self.screen.fill(self.grey)
 
+        starting_pos_left = 50
+        starting_pos_top = 40
+        left = starting_pos_left
+        top = starting_pos_top
+
+        color_switch = False
+        color = self.orange
+        square_size = None
+
+        for row in self.board.position:
+            for square in row:
+                if color_switch:
+                    color = self.beige
+                    color_switch = False
+                else:
+                    color = self.orange
+                    color_switch = True
+
+                square_size = square.size
+                pygame.draw.rect(self.screen, color, (left, top, square_size, square_size))
+                left += square_size
+            
+            top += square_size
+            left = starting_pos_left
+            if color_switch:
+                    color = self.beige
+                    color_switch = False
+            else:
+                color = self.orange
+                color_switch = True
+
     def show_history(self):
         pass
 
     def show_visualize_game(self):
         pass
 
-    def draw_button_centered(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height):
+    def draw_button(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height, is_centered):
         font = pygame.font.SysFont("Arial", font_size)
         message = font.render(text, True, font_color)
         
-        message_rect = message.get_rect(center=(self.width//2, top))
-        button = pygame.draw.rect(self.screen, color, (message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)))
-        self.screen.blit(message, message_rect)
-        return [text, message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)]
-
-    def draw_button(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height):
-        font = pygame.font.SysFont("Arial", font_size)
-        message = font.render(text, True, font_color)
-        
-        message_rect = message.get_rect(center=(left, top))
+        if is_centered:
+            message_rect = message.get_rect(center=(self.width//2, top))
+        else:
+            message_rect = message.get_rect(center=(left, top))
         button = pygame.draw.rect(self.screen, color, (message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)))
         self.screen.blit(message, message_rect)
         return [text, message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)]
@@ -141,5 +171,5 @@ class chessGame():
 ####################################################################################
 
 if __name__ == "__main__":
-    chess_game = chessGame()
+    chess_game = chess_game()
     chess_game.main()
