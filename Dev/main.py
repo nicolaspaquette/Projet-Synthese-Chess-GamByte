@@ -1,49 +1,145 @@
 import pygame
+from random import randrange
 
-WIDTH, HEIGHT = 1200, 800
-WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
+class chessGame():
+    def __init__(self):
+        pygame.init()
 
-GREY = (200, 200, 200)
-BLACK = (0, 0, 0)
+        self.width, self.height = 1200, 800
+        self.window = pygame.display.set_mode((self.width, self.height))
+        self.screen = pygame.Surface(self.window.get_size())
 
-FPS = 10
+        self.grey = (125, 125, 125)
+        self.black = (0, 0, 0)
+        self.light_black = (50, 50, 50)
+        self.white = (255, 255, 255)
+        self.fps = 10
 
-def show_menu():
-    WINDOW.fill(GREY)
-    draw_button("boop", BLACK, 100, 100, 100, 100)
+        self.is_menu = True
+        self.is_game = False
+        self.is_visualize_game = False
+        self.is_history = False
+        self.select_color = False
 
-def show_game():
-    WINDOW.fill(GREY)
+        self.button_positions = []
+        self.color_button_positions = True
+        self.menu_button_positions = True
+        self.mouse = None
 
-def show_history():
-    WINDOW.fill(GREY)
+        self.selected_color = None
 
-def show_visualize_game():
-    WINDOW.fill(GREY)
+    def main(self):
+        is_running = True
+        clock = pygame.time.Clock()
+        self.screen = self.screen.convert()
 
-def draw_button(text, color, left, top, width, height):
-    font = pygame.font.SysFont("Arial", 20)
-    button = pygame.draw.rect(WINDOW, color, (left, top, width, height))
+        while is_running:
+            clock.tick(self.fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    is_running = False
 
-def main():
-    is_running = True
-    clock = pygame.time.Clock()
-    pygame.font.init()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.mouse = pygame.mouse.get_pos()
 
-    while is_running:
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                is_running = False
+            if self.is_menu:
+                self.show_menu()
+                if self.mouse != None:
+                    for button in self.button_positions: # button: [texte, left, top, width, height]
+                        if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
+                            if button[0] == "PLAY":
+                                self.select_color = True
+                            elif button[0] == "White":
+                                self.selected_color = "white"
+                                self.is_menu = False
+                                self.is_game = True
+                            elif button[0] == "Random":
+                                random = randrange(10)
+                                if random % 2 == 0:
+                                    self.selected_color = "white"
+                                else:
+                                    self.selected_color = "black"
+                                self.is_menu = False
+                                self.is_game = True
+                            elif button[0] == "Black":
+                                self.selected_color = "black"
+                                self.is_menu = False
+                                self.is_game = True
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
+                            print(self.selected_color)
 
-        show_menu()
+            elif self.is_game:
+                self.show_game()
+            elif self.is_visualize_game:
+                self.show_visualize_game()
+            elif self.is_history:
+                self.show_history()
+            
+            self.window.blit(self.screen, (0,0))
+            pygame.display.update()
+
+        pygame.quit()
+
+    def show_menu(self):
+        pygame.display.set_caption("Main Menu")
+        self.screen.fill(self.grey)
+
+        font = pygame.font.SysFont("Arial", 75)
+        title_1 = font.render("CHESS ENGINE", True, self.black)
+        title_1_rect = title_1.get_rect(center=(self.width//2, 50))
+        title_2 = font.render("GAMBYTE", True, self.black)
+        title_2_rect = title_2.get_rect(center=(self.width//2, 120))
+        self.screen.blit(title_1, title_1_rect)
+        self.screen.blit(title_2, title_2_rect)
+
+        pos_play = self.draw_button_centered("PLAY", 30, self.white, self.black, 100, 300, 200, 10)
+        pos_history = self.draw_button_centered("HISTORY", 30, self.white, self.black, 100, 600, 175, 10)
+        if self.select_color:
+            pos_white = self.draw_button("White", 30, self.black, self.white, 450, 380, 10, 10)
+            pos_random = self.draw_button_centered("Random", 30, self.white, self.light_black, 100, 380, 10, 10)
+            pos_black = self.draw_button("Black", 30, self.white, self.black, 750, 380, 10, 10)
+            if self.color_button_positions:
+                self.color_button_positions = False
+                self.button_positions.append(pos_white)
+                self.button_positions.append(pos_random)
+                self.button_positions.append(pos_black)
+
+        if self.menu_button_positions:
+            self.menu_button_positions = False
+            self.button_positions.append(pos_play)
+            self.button_positions.append(pos_history)
+
+    def show_game(self):
+        pygame.display.set_caption("Game")
+        self.screen.fill(self.grey)
+
+    def show_history(self):
+        pass
+
+    def show_visualize_game(self):
+        pass
+
+    def draw_button_centered(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height):
+        font = pygame.font.SysFont("Arial", font_size)
+        message = font.render(text, True, font_color)
         
-        pygame.display.update()
+        message_rect = message.get_rect(center=(self.width//2, top))
+        button = pygame.draw.rect(self.screen, color, (message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)))
+        self.screen.blit(message, message_rect)
+        return [text, message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)]
 
-    pygame.quit()
+    def draw_button(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height):
+        font = pygame.font.SysFont("Arial", font_size)
+        message = font.render(text, True, font_color)
+        
+        message_rect = message.get_rect(center=(left, top))
+        button = pygame.draw.rect(self.screen, color, (message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)))
+        self.screen.blit(message, message_rect)
+        return [text, message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)]
+
+
+####################################################################################
 
 if __name__ == "__main__":
-    main()
+    chess_game = chessGame()
+    chess_game.main()
