@@ -6,7 +6,7 @@ class chess_game():
     def __init__(self):
         pygame.init()
 
-        self.width, self.height = 1200, 800
+        self.width, self.height = 1200, 700
         self.window = pygame.display.set_mode((self.width, self.height))
         self.screen = pygame.Surface(self.window.get_size())
 
@@ -119,7 +119,7 @@ class chess_game():
         self.screen.fill(self.grey)
 
         starting_pos_left = 50
-        starting_pos_top = 40
+        starting_pos_top = 50
         left = starting_pos_left
         top = starting_pos_top
 

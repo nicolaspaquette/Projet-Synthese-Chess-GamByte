@@ -1,71 +1,84 @@
-
-#import sys
-#from pathlib import Path
-#sys.path.insert(0, str(Path(__file__).parent) + '/pieces_script')
-#sys.path.append(str(Path(__file__).parent) + '/pieces_script')
-
 from square import square
-from bishop import bishop
+
+import sys
+from pathlib import Path
+#sys.path.insert(0, str(Path(__file__).parent) + '/pieces_script')
+sys.path.append(str(Path(__file__).parent) + '/pieces_script')
+
 from knight import knight
+from bishop import bishop
 from rook import rook
 from queen import queen
 from king import king
 from pawn import pawn
 
-class board():
+class board:
     def __init__(self):
         self.is_game_over = False
-        self.initialize_board()
+        self.position = self.initialize_board()
+        self.sq = None
+        self.piece = None
 
     def initialize_board(self):
-        self.position = []
-        self.row = []
-        self.piece_color = None
-
+        position = []
+        row = []
+        piece = None
+        sq = None
         for i in range(8):
             for j in range(8):
                 if i == 0 or i == 7:
                     if i == 0:
-                        self.piece_color = "black"
+                        piece_color = "black"
                     elif i == 7:
-                        self.piece_color = "white"
+                        piece_color = "white"
 
                     if j == 0 or j == 7:
-                        piece = rook(self.piece_color)
+                        piece = rook(piece_color)
                         sq = square(i, j, piece)
-                        self.row.append(sq)
+                        row.append(sq)
                     elif j == 1 or j == 6:
-                        self.row.append(square(i,j,knight(self.piece_color)))
+                        piece = knight(piece_color)
+                        sq = square(i, j, piece)
+                        row.append(sq)
                     elif j == 2 or j == 5:
-                        self.row.append(square(i,j,bishop(self.piece_color)))
+                        piece = bishop(piece_color)
+                        sq = square(i, j, piece)
+                        row.append(sq)
                     elif j == 3:
-                        self.row.append(square(i,j,queen(self.piece_color)))
+                        piece = queen(piece_color)
+                        sq = square(i, j, piece)
+                        row.append(sq)
                     elif j == 4:
-                        self.row.append(square(i,j,king(self.piece_color)))
+                        piece = king(piece_color)
+                        sq = square(i, j, piece)
+                        row.append(sq)
                 elif i == 1 or i == 6:
                     if i == 1:
-                        self.piece_color = "black"
+                        piece_color = "black"
                     elif i == 6:
-                        self.piece_color = "white"
+                        piece_color = "white"
 
-                    self.row.append(square(i,j,pawn(self.piece_color)))
+                    piece = pawn(piece_color)
+                    sq = square(i, j, piece)
+                    row.append(sq)
                 else:
-                    self.row.append(square(i,j))
-            self.position.append(self.row)
-            self.row = []
+                    sq = square(i, j)
+                    row.append(sq)
+            position.append(row)
+            row = []
 
-        list_pieces = []
-        for row in self.position:
-            for square in row:
-                if square.get_piece() != None:
-                    list_pieces.append(square.get_piece().name)
+        show_pieces = [] 
+        for row in position:
+            for sqr in row:
+                if sqr.get_piece() == None:
+                    show_pieces.append(" ")
                 else:
-                    liste_pieces.append(" ")
-            print(list_pieces)
-            list_pieces = []
-                    
-                    
+                    show_pieces.append(sqr.get_piece().name)
+            print(show_pieces)
+            show_pieces = []
 
+        return position
+                    
 
         #[0,   1,  2,  3,  4,  5,  6,  7]
         #[8,   9, 10, 11, 12, 13, 14, 15]
