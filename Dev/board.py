@@ -16,6 +16,7 @@ class board:
     def __init__(self):
         self.is_game_over = False
         self.position = self.initialize_board()
+        self.get_board_layout()
         self.sq = None
         self.piece = None
 
@@ -67,17 +68,18 @@ class board:
             position.append(row)
             row = []
 
+        return position
+
+    def get_board_layout(self):
         show_pieces = [] 
-        for row in position:
+        for row in self.position:
             for sqr in row:
                 if sqr.get_piece() == None:
                     show_pieces.append(" ")
                 else:
-                    show_pieces.append(sqr.get_piece().name)
+                    show_pieces.append(sqr.get_piece().sign)
             print(show_pieces)
             show_pieces = []
-
-        return position
                     
 
         # 8 ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']

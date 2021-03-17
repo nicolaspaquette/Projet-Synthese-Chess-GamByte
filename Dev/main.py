@@ -33,22 +33,10 @@ class chess_game():
         self.mouse = None
 
         self.selected_color = None
-
         self.board = board()
-
         self.path = str(Path(__file__).parent) + '/assets/pieces/'
-        #self.black_bishop = pygame.image.load(self.path + 'black_bishop.png')
-        #self.black_knight = pygame.image.load(self.path + 'black_knight.png')
-        #self.black_queen = pygame.image.load(self.path + 'black_queen.png')
-        #self.black_king = pygame.image.load(self.path + 'black_king.png')
-        #self.black_rook = pygame.image.load(self.path + 'black_rook.png')
-        #self.black_pawn = pygame.image.load(self.path + 'black_pawn.png')
-        #self.white_bishop = pygame.image.load(self.path + 'white_bishop.png')
-        #self.white_knight = pygame.image.load(self.path + 'white_knight.png')
-        #self.white_queen = pygame.image.load(self.path + 'white_queen.png')
-        #self.white_king = pygame.image.load(self.path + 'white_king.png')
-        #self.white_rook = pygame.image.load(self.path + 'white_rook.png')
-        #self.white_pawn = pygame.image.load(self.path + 'white_pawn.png')
+
+        self.square_values = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E", 6: "F", 7: "G", 8: "H"}
 
     def main(self):
         is_running = True
@@ -144,7 +132,15 @@ class chess_game():
         color = self.orange
         square_size = None
 
+        value = 8
+        letter_value = 1
+        font = pygame.font.SysFont("Arial", 30)
+        
         for row in self.board.position:
+            value_text = font.render(str(value), True, self.black)
+            value_text_rect = value_text.get_rect(center=(starting_pos_left - 20 , top + 35))
+            self.screen.blit(value_text, value_text_rect)
+            value -= 1
             for square in row:
                 if color_switch:
                     color = self.beige
@@ -163,6 +159,12 @@ class chess_game():
                     piece_image = pygame.transform.scale(piece_image, (square_size, square_size))
                     piece_image.convert()
                     self.screen.blit(piece_image, (left, top, square_size, square_size))
+
+                if value == 1:
+                    letter_text = font.render(self.square_values[letter_value], True, self.black)
+                    letter_text_rect = letter_text.get_rect(center=(left + square_size/2, top + square_size*2 + 20))
+                    self.screen.blit(letter_text, letter_text_rect)
+                    letter_value += 1
 
                 left += square_size
             
