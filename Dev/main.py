@@ -75,6 +75,8 @@ class chess_game():
                                 self.selected_color = "black"
                                 self.is_menu = False
                                 self.is_game = True
+                            elif button[0] == "HISTORY":
+                                print("history")
 
                     self.mouse = None
 
