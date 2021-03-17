@@ -10,4 +10,7 @@ class square:
         self.piece = piece
 
     def get_piece(self):
-        return self.piece
+        if self.piece != None:
+            return self.piece
+        else:
+            return None

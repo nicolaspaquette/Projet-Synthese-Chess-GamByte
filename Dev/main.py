@@ -2,6 +2,9 @@ import pygame
 from random import randrange
 from board import board
 
+import sys
+from pathlib import Path
+
 class chess_game():
     def __init__(self):
         pygame.init()
@@ -32,6 +35,20 @@ class chess_game():
         self.selected_color = None
 
         self.board = board()
+
+        self.path = str(Path(__file__).parent) + '/assets/pieces/'
+        #self.black_bishop = pygame.image.load(self.path + 'black_bishop.png')
+        #self.black_knight = pygame.image.load(self.path + 'black_knight.png')
+        #self.black_queen = pygame.image.load(self.path + 'black_queen.png')
+        #self.black_king = pygame.image.load(self.path + 'black_king.png')
+        #self.black_rook = pygame.image.load(self.path + 'black_rook.png')
+        #self.black_pawn = pygame.image.load(self.path + 'black_pawn.png')
+        #self.white_bishop = pygame.image.load(self.path + 'white_bishop.png')
+        #self.white_knight = pygame.image.load(self.path + 'white_knight.png')
+        #self.white_queen = pygame.image.load(self.path + 'white_queen.png')
+        #self.white_king = pygame.image.load(self.path + 'white_king.png')
+        #self.white_rook = pygame.image.load(self.path + 'white_rook.png')
+        #self.white_pawn = pygame.image.load(self.path + 'white_pawn.png')
 
     def main(self):
         is_running = True
@@ -91,9 +108,9 @@ class chess_game():
 
         font = pygame.font.SysFont("Arial", 75)
         title_1 = font.render("CHESS ENGINE", True, self.black)
-        title_1_rect = title_1.get_rect(center=(self.width//2, 50))
+        title_1_rect = title_1.get_rect(center=(self.width//2, 60))
         title_2 = font.render("GAMBYTE", True, self.black)
-        title_2_rect = title_2.get_rect(center=(self.width//2, 120))
+        title_2_rect = title_2.get_rect(center=(self.width//2, 140))
         self.screen.blit(title_1, title_1_rect)
         self.screen.blit(title_2, title_2_rect)
 
@@ -138,6 +155,15 @@ class chess_game():
 
                 square_size = square.size
                 pygame.draw.rect(self.screen, color, (left, top, square_size, square_size))
+
+                square_piece = square.get_piece()
+                if square_piece != None:
+                    path = str(self.path + square_piece.color + "_" + square_piece.name + ".png")
+                    piece_image = pygame.image.load(path)
+                    piece_image = pygame.transform.scale(piece_image, (square_size, square_size))
+                    piece_image.convert()
+                    self.screen.blit(piece_image, (left, top, square_size, square_size))
+
                 left += square_size
             
             top += square_size
