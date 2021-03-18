@@ -2,7 +2,6 @@ from square import square
 
 import sys
 from pathlib import Path
-#sys.path.insert(0, str(Path(__file__).parent) + '/pieces_script')
 sys.path.append(str(Path(__file__).parent) + '/pieces_script')
 
 from knight import knight
@@ -13,12 +12,12 @@ from king import king
 from pawn import pawn
 
 class board:
-    def __init__(self):
+    def __init__(self, player_color):
+        self.player_color = player_color
         self.is_game_over = False
         self.position = self.initialize_board()
         self.get_board_layout()
-        self.sq = None
-        self.piece = None
+        self.is_board_flipped = False
 
     def initialize_board(self):
         position = []
@@ -68,19 +67,21 @@ class board:
             position.append(row)
             row = []
 
+        if self.player_color == "black":
+            position.reverse()
+
         return position
 
     def get_board_layout(self):
-        show_pieces = [] 
+        show_pieces = []
         for row in self.position:
             for sqr in row:
                 if sqr.get_piece() == None:
-                    show_pieces.append(" ")
+                    show_pieces.append("      ")
                 else:
-                    show_pieces.append(sqr.get_piece().sign)
+                    show_pieces.append(sqr.get_piece().color + sqr.get_piece().sign)
             print(show_pieces)
-            show_pieces = []
-                    
+            show_pieces = []          
 
         # 8 ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
         # 7 ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P']
@@ -91,7 +92,7 @@ class board:
         # 2 ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P']
         # 1 ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
         #     A    B    C    D    E    F    G    H
-
-        # joueur blanc en bas de la matrice, joueur noir en haut
+        
+        #      human player always on the bottom
 
 

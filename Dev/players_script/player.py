@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-class piece(ABC):
+class player(ABC):
     
     @abstractmethod
-    def get_valid_moves(self):
+    def choose_move(self):
         pass

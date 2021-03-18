@@ -1,17 +1,26 @@
 import pygame
+pygame.init()
+
 from random import randrange
+import math
+
 from board import board
 
 import sys
 from pathlib import Path
+sys.path.append(str(Path(__file__).parent) + '/players_script')
+
+from ai import ai
+from human import human
 
 class chess_game():
     def __init__(self):
-        pygame.init()
 
         self.width, self.height = 1200, 700
         self.window = pygame.display.set_mode((self.width, self.height))
         self.screen = pygame.Surface(self.window.get_size())
+        self.screen = self.screen.convert()
+        self.fps = 10
 
         self.grey = (125, 125, 125)
         self.black = (0, 0, 0)
@@ -19,7 +28,6 @@ class chess_game():
         self.white = (255, 255, 255)
         self.beige = (204, 174, 92)
         self.orange = (176, 106, 26)
-        self.fps = 10
 
         self.is_menu = True
         self.is_game = False
@@ -33,15 +41,25 @@ class chess_game():
         self.mouse = None
 
         self.selected_color = None
-        self.board = board()
         self.path = str(Path(__file__).parent) + '/assets/pieces/'
 
-        self.square_values = {1: "A", 2: "B", 3: "C", 4: "D", 5: "E", 6: "F", 7: "G", 8: "H"}
+        self.white_row_values = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
+        self.white_column_values = {0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
+        self.black_row_values = {0: "H", 1: "G", 2: "F", 3: "E", 4: "D", 5: "C", 6: "B", 7: "A"}
+        self.black_column_values = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
+
+        self.players = []
+        self.are_players_initialized = False
+
+        self.player_turn = None
+        self.game_started = False
+
+        self.starting_pos_left = 50
+        self.starting_pos_top = 50
 
     def main(self):
         is_running = True
         clock = pygame.time.Clock()
-        self.screen = self.screen.convert()
 
         while is_running:
             clock.tick(self.fps)
@@ -78,10 +96,26 @@ class chess_game():
                             elif button[0] == "HISTORY":
                                 print("history")
 
-                    self.mouse = None
-
             elif self.is_game:
+                if not self.are_players_initialized:
+                    self.board = board(self.selected_color)
+                    self.initialize_players()
+                    self.are_players_initialized = True
+
                 self.show_game()
+
+                if not self.game_started:
+                    self.game_started = True
+                    self.start_game()
+
+                if self.mouse != None:
+                    square_size = self.board.position[0][0].size
+                    if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
+                        if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
+                            row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
+                            column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
+                            print(row, column)
+
             elif self.is_visualize_game:
                 self.show_visualize_game()
             elif self.is_history:
@@ -89,6 +123,8 @@ class chess_game():
             
             self.window.blit(self.screen, (0,0))
             pygame.display.update()
+
+            self.mouse = None
 
         pygame.quit()
 
@@ -125,24 +161,29 @@ class chess_game():
         pygame.display.set_caption("Game")
         self.screen.fill(self.grey)
 
-        starting_pos_left = 50
-        starting_pos_top = 50
-        left = starting_pos_left
-        top = starting_pos_top
+        left = self.starting_pos_left
+        top = self.starting_pos_top
 
         color_switch = False
         color = self.orange
         square_size = None
 
-        value = 8
-        letter_value = 1
+        value = 0
+        letter_value = 0
         font = pygame.font.SysFont("Arial", 30)
+
+        if self.selected_color == "white":
+            row_values = self.white_row_values
+            column_values = self.white_column_values
+        else:
+            row_values = self.black_row_values
+            column_values = self.black_column_values
         
         for row in self.board.position:
-            value_text = font.render(str(value), True, self.black)
-            value_text_rect = value_text.get_rect(center=(starting_pos_left - 20 , top + 35))
+            value_text = font.render(column_values[value], True, self.black)
+            value_text_rect = value_text.get_rect(center=(self.starting_pos_left - 20 , top + 35))
             self.screen.blit(value_text, value_text_rect)
-            value -= 1
+            value += 1
             for square in row:
                 if color_switch:
                     color = self.beige
@@ -162,8 +203,8 @@ class chess_game():
                     piece_image.convert()
                     self.screen.blit(piece_image, (left, top, square_size, square_size))
 
-                if value == 1:
-                    letter_text = font.render(self.square_values[letter_value], True, self.black)
+                if value == 7:
+                    letter_text = font.render(row_values[letter_value], True, self.black)
                     letter_text_rect = letter_text.get_rect(center=(left + square_size/2, top + square_size*2 + 20))
                     self.screen.blit(letter_text, letter_text_rect)
                     letter_value += 1
@@ -171,7 +212,7 @@ class chess_game():
                 left += square_size
             
             top += square_size
-            left = starting_pos_left
+            left = self.starting_pos_left
             if color_switch:
                     color = self.beige
                     color_switch = False
@@ -197,6 +238,31 @@ class chess_game():
         self.screen.blit(message, message_rect)
         return [text, message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)]
 
+    def initialize_players(self):
+        if self.selected_color == "white":
+            ai_color = "black"
+        else:
+            ai_color = "white"
+
+        self.players.append(human(self.selected_color, self.board))
+        self.players.append(ai(ai_color, self.board))
+
+    def start_game(self):
+        if self.players[0].color == "white":
+            self.player_turn = self.players[0]
+        else:
+            self.player_turn = self.players[1]
+
+        self.player_turn.choose_move()
+    
+    def change_player_turn(self):
+        if self.player_turn == self.players[0]:
+            self.player_turn = self.players[1]
+        else:
+            self.player_turn = self.players[0]
+
+        self.player_turn.choose_move()
+     
 
 ####################################################################################
 
