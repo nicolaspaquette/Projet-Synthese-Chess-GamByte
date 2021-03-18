@@ -13,11 +13,11 @@ from pawn import pawn
 
 class board:
     def __init__(self, player_color):
-        self.player_color = player_color
+        self.human_player_color = player_color
         self.is_game_over = False
         self.position = self.initialize_board()
-        self.get_board_layout()
-        self.is_board_flipped = False
+        #self.get_board_layout()
+        self.initialize_starting_positions()
 
     def initialize_board(self):
         position = []
@@ -67,10 +67,19 @@ class board:
             position.append(row)
             row = []
 
-        if self.player_color == "black":
+        if self.human_player_color == "black":
             position.reverse()
 
         return position
+
+    def initialize_starting_positions(self):
+        for i in range(8):
+            for j in range(8):
+                square = self.position[i][j]
+                piece = square.get_piece()
+                if piece != None:
+                    piece.starting_row = i
+                    piece.starting_column = j
 
     def get_board_layout(self):
         show_pieces = []
@@ -83,16 +92,19 @@ class board:
             print(show_pieces)
             show_pieces = []          
 
-        # 8 ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
-        # 7 ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P']
-        # 6 [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
-        # 5 [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
-        # 4 [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
-        # 3 [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
-        # 2 ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P']
-        # 1 ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
-        #     A    B    C    D    E    F    G    H
+    def get_piece_in_square(self, row , column):
+        square = self.position[row][column]
+        piece = square.get_piece()
+        if piece != None:
+            print(piece.color, piece.name, piece.starting_row, piece.starting_column)
+
+    def choose_piece_to_move(self, row, column):
+        square = self.position[row][column]
+        piece = square.get_piece()
+        if piece != None and piece.color == self.human_player_color:
+            print("you choose your piece: " + piece.name + " at " + str(row) + " " + str(column))
+
         
-        #      human player always on the bottom
+
 
 
