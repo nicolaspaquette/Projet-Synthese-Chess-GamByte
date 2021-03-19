@@ -44,9 +44,9 @@ class chess_game():
         self.path = str(Path(__file__).parent) + '/assets/pieces/'
 
         self.white_human_row_values = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
-        self.white_human_row_values = {0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
+        self.white_human_column_values = {0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
         self.black_human_row_values = {0: "H", 1: "G", 2: "F", 3: "E", 4: "D", 5: "C", 6: "B", 7: "A"}
-        self.black_human_row_values = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
+        self.black_human_column_values = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
 
         self.players = []
         self.are_players_initialized = False
@@ -114,8 +114,9 @@ class chess_game():
                         if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
                             row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
                             column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
-                            self.board.get_piece_in_square(row, column)
-                            self.board.choose_piece_to_move(row, column)
+                            #self.board.get_piece_in_square(row, column)
+                            #self.board.choose_piece_to_move(row, column)
+                            self.board.get_square_position(row, column)
 
             elif self.is_visualize_game:
                 self.show_visualize_game()
@@ -175,10 +176,10 @@ class chess_game():
 
         if self.selected_color == "white":
             row_values = self.white_human_row_values
-            column_values = self.white_human_row_values
+            column_values = self.white_human_column_values
         else:
             row_values = self.black_human_row_values
-            column_values = self.black_human_row_values
+            column_values = self.black_human_column_values
         
         for row in self.board.position:
             value_text = font.render(column_values[value], True, self.black)

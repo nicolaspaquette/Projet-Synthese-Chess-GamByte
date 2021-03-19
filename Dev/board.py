@@ -24,13 +24,20 @@ class board:
         row = []
         piece = None
         sq = None
+
         for i in range(8):
             for j in range(8):
                 if i == 0 or i == 7:
-                    if i == 0:
-                        piece_color = "black"
-                    elif i == 7:
-                        piece_color = "white"
+                    if self.human_player_color == "white":
+                        if i == 0:
+                            piece_color = "black"
+                        elif i == 7:
+                            piece_color = "white"
+                    else:
+                        if i == 0:
+                            piece_color = "white"
+                        elif i == 7:
+                            piece_color = "black"
 
                     if j == 0 or j == 7:
                         piece = rook(piece_color)
@@ -45,18 +52,30 @@ class board:
                         sq = square(i, j, piece)
                         row.append(sq)
                     elif j == 3:
-                        piece = queen(piece_color)
+                        if self.human_player_color == "white":
+                            piece = queen(piece_color)
+                        else:
+                            piece = king(piece_color)
                         sq = square(i, j, piece)
                         row.append(sq)
                     elif j == 4:
-                        piece = king(piece_color)
+                        if self.human_player_color == "white":
+                            piece = king(piece_color)
+                        else:
+                            piece = queen(piece_color)
                         sq = square(i, j, piece)
                         row.append(sq)
                 elif i == 1 or i == 6:
-                    if i == 1:
-                        piece_color = "black"
-                    elif i == 6:
-                        piece_color = "white"
+                    if self.human_player_color == "white":
+                        if i == 1:
+                            piece_color = "black"
+                        elif i == 6:
+                            piece_color = "white"
+                    else:
+                        if i == 1:
+                            piece_color = "white"
+                        elif i == 6:
+                            piece_color = "black"
 
                     piece = pawn(piece_color)
                     sq = square(i, j, piece)
@@ -66,9 +85,6 @@ class board:
                     row.append(sq)
             position.append(row)
             row = []
-
-        if self.human_player_color == "black":
-            position.reverse()
 
         return position
 
@@ -97,6 +113,10 @@ class board:
         piece = square.get_piece()
         if piece != None:
             print(piece.color, piece.name, piece.starting_row, piece.starting_column)
+
+    def get_square_position(self, row , column):
+        square = self.position[row][column]
+        print(square.row, square.column)
 
     def choose_piece_to_move(self, row, column):
         square = self.position[row][column]
