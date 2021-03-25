@@ -10,13 +10,13 @@ class knight(piece):
         self.initialized_column = None
 
     def is_move_valid(self, starting_row, starting_column, final_row, final_column):
-        if starting_row + 2 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column :
+        if starting_row + 2 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column):
             return True
-        elif starting_row + 1 == final_row and (starting_column - 2 == final_column or starting_column + 2 == final_column :
+        elif starting_row + 1 == final_row and (starting_column - 2 == final_column or starting_column + 2 == final_column):
             return True
-        if starting_row - 2 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column :
+        elif starting_row - 2 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column):
             return True
-        elif starting_row - 1 == final_row and (starting_column - 2 == final_column or starting_column + 2 == final_column :
+        elif starting_row - 1 == final_row and (starting_column - 2 == final_column or starting_column + 2 == final_column):
             return True
         else:
             return False

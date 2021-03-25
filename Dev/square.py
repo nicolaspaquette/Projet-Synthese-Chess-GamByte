@@ -14,3 +14,6 @@ class square:
             return self.piece
         else:
             return None
+
+    def remove_piece(self):
+        self.piece = None

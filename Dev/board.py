@@ -117,11 +117,11 @@ class board:
 
     def get_square_position(self, row , column):
         square = self.position[row][column]
-        print(square.row, square.column)
 
     def choose_piece_to_move(self, row, column):
         square = self.position[row][column]
         piece = square.get_piece()
+        #if piece != None: #and piece.color == self.human_player_color:
         if piece != None and piece.color == self.human_player_color:
             print("you choose your piece: " + piece.name + " at " + str(row) + " " + str(column))
             self.selected_square = square
@@ -131,12 +131,38 @@ class board:
 
     def verify_move(self, starting_row, starting_column, final_row, final_column):
         piece = self.selected_square.get_piece()
+        is_valid = piece.is_move_valid(starting_row, starting_column, final_row, final_column)
+        return is_valid
 
-    def move_piece(self, starting_row, starting_column, final_row, final_column):
-        pass
+    def move_piece(self, starting_row, starting_column, final_row, final_column, valid_positions):
+        moving_piece = self.selected_square.get_piece()
+        self.selected_square.remove_piece()
+        self.position[final_row][final_column].add_piece(moving_piece)
+
+        if self.selected_square in valid_positions:
+            valid_positions.remove(self.selected_square)
+
+        return valid_positions
 
     def get_valid_positions(self, starting_row, starting_column):
-        pass
+        possible_squares = []
+        valid_positions = []
+        piece = self.selected_square.get_piece()
+
+        for row in self.position:
+            for square in row:
+                if piece.is_move_valid(starting_row, starting_column, square.row, square.column):
+                    possible_squares.append(square)
+
+        for square in possible_squares:
+            if square.get_piece() != None:
+                if square.get_piece().color != piece.color:
+                    valid_positions.append(square)
+            else:
+                valid_positions.append(square)
+
+
+        return valid_positions
 
     def capture_piece(row, column):
         pass

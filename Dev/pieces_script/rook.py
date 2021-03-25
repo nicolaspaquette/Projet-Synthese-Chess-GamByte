@@ -10,7 +10,7 @@ class rook(piece):
         self.initialized_column = None
 
     def is_move_valid(self, starting_row, starting_column, final_row, final_column):
-        elif starting_row == final_row or starting_column == final_column and (starting_row != final_row or starting_column != final_column):
+        if starting_row == final_row or starting_column == final_column and (starting_row != final_row or starting_column != final_column):
             return True
         else:
             return False

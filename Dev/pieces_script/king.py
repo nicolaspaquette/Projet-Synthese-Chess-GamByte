@@ -22,7 +22,7 @@ class king(piece):
             return True
         elif starting_row + 1 == final_row and starting_column - 1 == final_column:
             return True
-       elif starting_row - 1 == final_row and starting_column + 1 == final_column:
+        elif starting_row - 1 == final_row and starting_column + 1 == final_column:
             return True
         elif starting_row - 1 == final_row and starting_column - 1 == final_column:
             return True

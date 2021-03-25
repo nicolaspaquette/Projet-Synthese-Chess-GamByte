@@ -10,24 +10,24 @@ class pawn(piece):
         self.initialized_column = None
 
     def is_move_valid(self, starting_row, starting_column, final_row, final_column):
-        if self.initialized_row == 2:
+        if self.initialized_row == 1:
             if starting_row + 1 == final_row and starting_column == final_column:
                 return True
-            elif starting_row == self.initialized_row and starting_row + 2 == final_row and starting_column = final_column
+            elif starting_row == self.initialized_row and starting_row + 2 == final_row and starting_column == final_column:
                 return True
-        elif self.initialized_row == 7:
-            if starting_row 1 1 == final_row and starting_column == final_column
+        elif self.initialized_row == 6:
+            if starting_row - 1 == final_row and starting_column == final_column:
                 return True
-            elif starting_row == self.initialized_row and starting_row - 2 == final_row and starting_column = final_column:
+            elif starting_row == self.initialized_row and starting_row - 2 == final_row and starting_column == final_column:
                 return True
         else:
             return False
 
     def is_move_capture(self, starting_row, starting_column, final_row, final_column):
-        if self.initialized_row == 2:
+        if self.initialized_row == 1:
             if starting_row + 1 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column):
                 return True
-        elif self.initialized_row == 7:
+        elif self.initialized_row == 6:
             if starting_row - 1 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column):
                 return True
         else:

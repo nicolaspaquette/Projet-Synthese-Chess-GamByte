@@ -20,7 +20,7 @@ class chess_game():
         self.window = pygame.display.set_mode((self.width, self.height))
         self.screen = pygame.Surface(self.window.get_size())
         self.screen = self.screen.convert()
-        self.fps = 10
+        self.fps = 5
 
         self.grey = (125, 125, 125)
         self.black = (0, 0, 0)
@@ -28,6 +28,8 @@ class chess_game():
         self.white = (255, 255, 255)
         self.beige = (204, 174, 92)
         self.orange = (176, 106, 26)
+        self.green = (0, 130, 0)
+        self.red = (130, 0, 0)
 
         self.is_menu = True
         self.is_game = False
@@ -119,13 +121,19 @@ class chess_game():
                             column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
 
                             if self.board.choose_piece_to_move(row, column):
-                                starting_row = row
-                                starting_column = column
-                                #valid_positions = self.board.get_valid_positions(starting_row, starting_column)
+                                self.starting_row = row
+                                self.starting_column = column
+                                valid_positions = self.board.get_valid_positions(self.starting_row, self.starting_column)
+                            
+                            if self.starting_row != None and self.starting_column != None and (row != self.starting_row or column != self.starting_column):
+                                if self.board.verify_move(self.starting_row, self.starting_column, row, column):
+                                    print("move is valid")
+                                    valid_positions = self.board.move_piece(self.starting_row, self.starting_column, row, column, valid_positions)
+                                    self.starting_row = None
+                                    self.starting_column = None
 
-                            if starting_row != None and starting_column != None and (row != starting_row or column != starting_column):
-                                if self.board.verify_move(starting_row, starting_column, row, column):
-                                    self.board.move_piece(starting_row, starting_column, row, column)
+                if self.starting_row != None and self.starting_column != None:
+                    self.show_valid_positions(valid_positions)
 
             elif self.is_visualize_game:
                 self.show_visualize_game()
@@ -273,6 +281,14 @@ class chess_game():
             self.player_turn = self.players[0]
 
         self.player_turn.choose_move()
+
+    def show_valid_positions(self, valid_positions):
+        for square in valid_positions:
+            color = self.green
+            if square.get_piece() != None and square.get_piece().color != self.selected_color:
+                color = self.red
+            pygame.draw.circle(self.screen, color, (self.starting_pos_left + (square.size * square.column) + square.size / 2, self.starting_pos_top + (square.size * square.row) + square.size / 2), 5)
+
      
 
 ####################################################################################
