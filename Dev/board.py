@@ -18,6 +18,7 @@ class board:
         self.position = self.initialize_board()
         #self.get_board_layout()
         self.initialize_starting_positions()
+        self.selected_square = None
 
     def initialize_board(self):
         position = []
@@ -94,8 +95,8 @@ class board:
                 square = self.position[i][j]
                 piece = square.get_piece()
                 if piece != None:
-                    piece.starting_row = i
-                    piece.starting_column = j
+                    piece.initialized_row = i
+                    piece.initialized_column = j
 
     def get_board_layout(self):
         show_pieces = []
@@ -112,7 +113,7 @@ class board:
         square = self.position[row][column]
         piece = square.get_piece()
         if piece != None:
-            print(piece.color, piece.name, piece.starting_row, piece.starting_column)
+            print(piece.color, piece.name, piece.initialized_row, piece.initialized_column)
 
     def get_square_position(self, row , column):
         square = self.position[row][column]
@@ -123,7 +124,22 @@ class board:
         piece = square.get_piece()
         if piece != None and piece.color == self.human_player_color:
             print("you choose your piece: " + piece.name + " at " + str(row) + " " + str(column))
+            self.selected_square = square
+            return True
+        else:
+            return False
 
+    def verify_move(self, starting_row, starting_column, final_row, final_column):
+        piece = self.selected_square.get_piece()
+
+    def move_piece(self, starting_row, starting_column, final_row, final_column):
+        pass
+
+    def get_valid_positions(self, starting_row, starting_column):
+        pass
+
+    def capture_piece(row, column):
+        pass
         
 
 

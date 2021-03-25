@@ -6,8 +6,13 @@ class queen(piece):
         self.sign = "Q"
         self.name = "queen"
         self.as_moved = False
-        self.starting_row = None
-        self.starting_column = None
+        self.initialized_row = None
+        self.initialized_column = None
 
-    def get_valid_moves(self):
-        pass
+    def is_move_valid(self, starting_row, starting_column, final_row, final_column):
+        if abs(starting_row - final_row) == abs(starting_column - final_column) and (starting_row != final_row or starting_column != final_column):
+            return True
+        elif starting_row == final_row or starting_column == final_column and (starting_row != final_row or starting_column != final_column):
+            return True
+        else:
+            return False

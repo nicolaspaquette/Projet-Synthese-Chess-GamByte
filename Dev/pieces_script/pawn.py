@@ -6,8 +6,29 @@ class pawn(piece):
         self.sign = "P"
         self.name = "pawn"
         self.as_moved = False
-        self.starting_row = None
-        self.starting_column = None
+        self.initialized_row = None
+        self.initialized_column = None
 
-    def get_valid_moves(self):
-        pass
+    def is_move_valid(self, starting_row, starting_column, final_row, final_column):
+        if self.initialized_row == 2:
+            if starting_row + 1 == final_row and starting_column == final_column:
+                return True
+            elif starting_row == self.initialized_row and starting_row + 2 == final_row and starting_column = final_column
+                return True
+        elif self.initialized_row == 7:
+            if starting_row 1 1 == final_row and starting_column == final_column
+                return True
+            elif starting_row == self.initialized_row and starting_row - 2 == final_row and starting_column = final_column:
+                return True
+        else:
+            return False
+
+    def is_move_capture(self, starting_row, starting_column, final_row, final_column):
+        if self.initialized_row == 2:
+            if starting_row + 1 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column):
+                return True
+        elif self.initialized_row == 7:
+            if starting_row - 1 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column):
+                return True
+        else:
+            return False

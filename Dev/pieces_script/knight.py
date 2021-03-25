@@ -6,8 +6,17 @@ class knight(piece):
         self.sign = "N"
         self.name = "knight"
         self.as_moved = False
-        self.starting_row = None
-        self.starting_column = None
+        self.initialized_row = None
+        self.initialized_column = None
 
-    def get_valid_moves(self):
-        pass
+    def is_move_valid(self, starting_row, starting_column, final_row, final_column):
+        if starting_row + 2 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column :
+            return True
+        elif starting_row + 1 == final_row and (starting_column - 2 == final_column or starting_column + 2 == final_column :
+            return True
+        if starting_row - 2 == final_row and (starting_column - 1 == final_column or starting_column + 1 == final_column :
+            return True
+        elif starting_row - 1 == final_row and (starting_column - 2 == final_column or starting_column + 2 == final_column :
+            return True
+        else:
+            return False

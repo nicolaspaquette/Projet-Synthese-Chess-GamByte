@@ -57,6 +57,9 @@ class chess_game():
         self.starting_pos_left = 50
         self.starting_pos_top = 50
 
+        self.starting_row = None
+        self.starting_column = None
+
     def main(self):
         is_running = True
         clock = pygame.time.Clock()
@@ -114,9 +117,15 @@ class chess_game():
                         if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
                             row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
                             column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
-                            #self.board.get_piece_in_square(row, column)
-                            #self.board.choose_piece_to_move(row, column)
-                            self.board.get_square_position(row, column)
+
+                            if self.board.choose_piece_to_move(row, column):
+                                starting_row = row
+                                starting_column = column
+                                #valid_positions = self.board.get_valid_positions(starting_row, starting_column)
+
+                            if starting_row != None and starting_column != None and (row != starting_row or column != starting_column):
+                                if self.board.verify_move(starting_row, starting_column, row, column):
+                                    self.board.move_piece(starting_row, starting_column, row, column)
 
             elif self.is_visualize_game:
                 self.show_visualize_game()
