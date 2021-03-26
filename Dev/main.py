@@ -126,7 +126,7 @@ class chess_game():
                                 valid_positions = self.board.get_valid_positions(self.starting_row, self.starting_column)
                             
                             if self.starting_row != None and self.starting_column != None and (row != self.starting_row or column != self.starting_column):
-                                if self.board.verify_move(self.starting_row, self.starting_column, row, column):
+                                if self.board.verify_move(valid_positions, row, column):
                                     print("move is valid")
                                     valid_positions = self.board.move_piece(self.starting_row, self.starting_column, row, column, valid_positions)
                                     self.starting_row = None
@@ -283,11 +283,8 @@ class chess_game():
         self.player_turn.choose_move()
 
     def show_valid_positions(self, valid_positions):
-        for square in valid_positions:
-            color = self.green
-            if square.get_piece() != None and square.get_piece().color != self.selected_color:
-                color = self.red
-            pygame.draw.circle(self.screen, color, (self.starting_pos_left + (square.size * square.column) + square.size / 2, self.starting_pos_top + (square.size * square.row) + square.size / 2), 5)
+        for position in valid_positions:
+            pygame.draw.circle(self.screen, self.green, (self.starting_pos_left + (75 * position[1]) + 75 / 2, self.starting_pos_top + (75 * position[0]) + 75 / 2), 5)
 
      
 

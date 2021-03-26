@@ -8,23 +8,7 @@ class king(piece):
         self.as_moved = False
         self.initialized_row = None
         self.initialized_column = None
+        self.can_be_captured_en_passant = False
 
-    def is_move_valid(self, starting_row, starting_column, final_row, final_column):
-        if starting_row + 1 == final_row and starting_column == final_column:
-            return True
-        elif starting_row - 1 == final_row and starting_column == final_column:
-            return True
-        elif starting_column + 1 == final_column and starting_row == final_row:
-            return True
-        elif starting_column - 1 == final_column and starting_row == final_row:
-            return True
-        elif starting_row + 1 == final_row and starting_column + 1 == final_column:
-            return True
-        elif starting_row + 1 == final_row and starting_column - 1 == final_column:
-            return True
-        elif starting_row - 1 == final_row and starting_column + 1 == final_column:
-            return True
-        elif starting_row - 1 == final_row and starting_column - 1 == final_column:
-            return True
-        else:
-            return False
+    def get_valid_positions(self, board_positions, row, column):
+        pass

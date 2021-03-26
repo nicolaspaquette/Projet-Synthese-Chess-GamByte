@@ -19,6 +19,7 @@ class board:
         #self.get_board_layout()
         self.initialize_starting_positions()
         self.selected_square = None
+        self.en_passant_piece = None
 
     def initialize_board(self):
         position = []
@@ -121,50 +122,66 @@ class board:
     def choose_piece_to_move(self, row, column):
         square = self.position[row][column]
         piece = square.get_piece()
-        #if piece != None: #and piece.color == self.human_player_color:
-        if piece != None and piece.color == self.human_player_color:
+        if piece != None: #and piece.color == self.human_player_color:
+        #if piece != None and piece.color == self.human_player_color:
             print("you choose your piece: " + piece.name + " at " + str(row) + " " + str(column))
             self.selected_square = square
             return True
         else:
             return False
 
-    def verify_move(self, starting_row, starting_column, final_row, final_column):
-        piece = self.selected_square.get_piece()
-        is_valid = piece.is_move_valid(starting_row, starting_column, final_row, final_column)
-        return is_valid
+    def verify_move(self, valid_positions, row, column):
+        move = (row, column)
+        if move in valid_positions:
+            return True
+        else:
+            return False
 
     def move_piece(self, starting_row, starting_column, final_row, final_column, valid_positions):
         moving_piece = self.selected_square.get_piece()
         self.selected_square.remove_piece()
         self.position[final_row][final_column].add_piece(moving_piece)
 
+        if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
+            if self.en_passant_piece.color == moving_piece.color:
+                self.en_passant_piece.can_be_captured_en_passant = False
+                self.en_passant_piece = None
+
+        if moving_piece.name == "pawn" and starting_row == moving_piece.initialized_row and (final_row - starting_row == 2 or final_row - starting_row == -2):
+            print("double move")
+            moving_piece.can_be_captured_en_passant = True
+            self.en_passant_piece = moving_piece
+
+
+        if final_column - 1 >= 0 and final_column + 1 <= 7:
+            if self.position[final_row][final_column].get_piece() != None and (self.position[final_row - 1][final_column].get_piece() != None or self.position[final_row + 1][final_column].get_piece() != None):
+                if self.position[final_row - 1][final_column].get_piece() != None:
+                    if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row - 1][final_column].get_piece().name == "pawn":
+                        if self.position[final_row][final_column].get_piece().color != self.position[final_row - 1][final_column].get_piece().color and self.position[final_row - 1][final_column].get_piece().can_be_captured_en_passant:
+                            self.position[final_row - 1][final_column].remove_piece()
+
+                if self.position[final_row + 1][final_column].get_piece() != None:
+                    if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row + 1][final_column].get_piece().name == "pawn":
+                        if self.position[final_row][final_column].get_piece().color != self.position[final_row + 1][final_column].get_piece().color and self.position[final_row + 1][final_column].get_piece().can_be_captured_en_passant:
+                            self.position[final_row + 1][final_column].remove_piece()
+                    
         if self.selected_square in valid_positions:
             valid_positions.remove(self.selected_square)
 
         return valid_positions
+
+    def unmake_move(self, actual_row, actual_column, original_row, original_column): # or board copy
+        pass
 
     def get_valid_positions(self, starting_row, starting_column):
         possible_squares = []
         valid_positions = []
         piece = self.selected_square.get_piece()
 
-        for row in self.position:
-            for square in row:
-                if piece.is_move_valid(starting_row, starting_column, square.row, square.column):
-                    possible_squares.append(square)
-
-        for square in possible_squares:
-            if square.get_piece() != None:
-                if square.get_piece().color != piece.color:
-                    valid_positions.append(square)
-            else:
-                valid_positions.append(square)
-
-
+        valid_positions = piece.get_valid_positions(self.position, starting_row, starting_column)
         return valid_positions
 
-    def capture_piece(row, column):
+    def is_king_in_check(self):
         pass
         
 
