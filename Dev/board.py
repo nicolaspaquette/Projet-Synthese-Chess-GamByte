@@ -157,7 +157,31 @@ class board:
         valid_positions = []
         piece = self.selected_square.get_piece()
 
+        if piece.color == "white":
+            opponent_color = "black"
+        else:
+            opponent_color = "white"
+
         valid_positions = piece.get_valid_positions(self.position, starting_row, starting_column)
+
+        #remove valid position if king is in check
+        if piece.name == "king":
+            if piece.color == "white":
+                opponent_color = "black"
+            else:
+                opponent_color = "white"
+
+            all_opponent_moves = []
+            all_opponent_moves = self.get_all_valid_positions(opponent_color)
+
+            positions_to_remove = []
+            for position in valid_positions:
+                if position in all_opponent_moves:
+                    positions_to_remove.append(position)
+
+            for position in positions_to_remove:
+                valid_positions.remove(position)
+
         return valid_positions
 
     def get_all_valid_positions(self, color):
@@ -168,7 +192,10 @@ class board:
             for square in row:
                 if square.get_piece() != None:
                     if square.get_piece().color == color:
-                        all_valid_positions += square.get_piece().get_valid_positions(self.position, square.row, square.column)
+                        if square.get_piece().name != "pawn":
+                            all_valid_positions += square.get_piece().get_valid_positions(self.position, square.row, square.column)
+                        else:
+                            all_valid_positions += square.get_piece().get_capture_positions(self.position, square.row, square.column)
 
         return all_valid_positions
 
@@ -177,13 +204,11 @@ class board:
         all_opponent_moves = []
 
         if king.color == "white":
-            color = "black"
+            opponent_color = "black"
         else:
-            color = "white"
+            opponent_color = "white"
 
-        all_opponent_moves = self.get_all_valid_positions(color)
-        print((king_row, king_column))
-        print(all_opponent_moves)
+        all_opponent_moves = self.get_all_valid_positions(opponent_color)
 
         #verify is king is attacked
         if (king_row, king_column) in all_opponent_moves:
@@ -193,11 +218,7 @@ class board:
             print("KING NOT IN CHECK")
             return False           
 
-    def king_possible_positions(self, king_row, king_column):
-        pass
-
     def get_kings_positions(self):
-
         for row in self.position:
             for square in row:
                 if square.get_piece() != None:

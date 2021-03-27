@@ -56,4 +56,36 @@ class pawn(piece):
                     valid_positions.append((row - 1, column + 1))
 
         return valid_positions
+
+    def get_capture_positions(self, board_positions, row, column):
+        valid_positions = []
+        if self.initialized_row == 1: #top pawns
+            #captures
+            if column > 0:
+                if board_positions[row + 1][column - 1].get_piece() == None or board_positions[row + 1][column - 1].get_piece().color != self.color:
+                    valid_positions.append((row + 1, column - 1))
+                if board_positions[row][column - 1].get_piece() == None or board_positions[row][column - 1].get_piece().color != self.color:
+                    valid_positions.append((row + 1, column - 1))
+                    
+            if column < 7:
+                if board_positions[row + 1][column + 1].get_piece() == None or board_positions[row + 1][column + 1].get_piece().color != self.color:
+                    valid_positions.append((row + 1, column + 1))
+                if board_positions[row][column + 1].get_piece() == None or board_positions[row][column + 1].get_piece().color != self.color:
+                    valid_positions.append((row + 1, column + 1))
+
+        elif self.initialized_row == 6: #bottom pawns
+            #captures
+            if column > 0:
+                if board_positions[row - 1][column - 1].get_piece() == None or board_positions[row - 1][column - 1].get_piece().color != self.color:
+                    valid_positions.append((row - 1, column - 1))
+                if board_positions[row][column - 1].get_piece() == None or board_positions[row][column - 1].get_piece().color != self.color:
+                    valid_positions.append((row - 1, column - 1))
+
+            if column < 7:        
+                if board_positions[row - 1][column + 1].get_piece() == None or board_positions[row - 1][column + 1].get_piece().color != self.color:
+                    valid_positions.append((row - 1, column + 1))
+                if board_positions[row][column + 1].get_piece() == None or board_positions[row][column + 1].get_piece().color != self.color:
+                    valid_positions.append((row - 1, column + 1))
+
+        return valid_positions
             

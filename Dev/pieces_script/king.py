@@ -29,18 +29,22 @@ class king(piece):
         #castling rules
         if not self.as_moved:
             if self.color == "white":
-                if board_positions[row][0].get_piece().name == "rook" and not board_positions[row][0].get_piece().as_moved:
-                    if board_positions[row][1].get_piece() == None and board_positions[row][2].get_piece() == None and board_positions[row][3].get_piece() == None:
-                        valid_positions.append((row, column - 2))
-                if board_positions[row][7].get_piece().name == "rook" and not board_positions[row][7].get_piece().as_moved:
-                    if board_positions[row][5].get_piece() == None and board_positions[row][6].get_piece() == None:
-                        valid_positions.append((row, column + 2))
+                if board_positions[row][0].get_piece() != None:
+                    if board_positions[row][0].get_piece().name == "rook" and not board_positions[row][0].get_piece().as_moved:
+                        if board_positions[row][1].get_piece() == None and board_positions[row][2].get_piece() == None and board_positions[row][3].get_piece() == None:
+                            valid_positions.append((row, column - 2))
+                if board_positions[row][7].get_piece() != None:
+                    if board_positions[row][7].get_piece().name == "rook" and not board_positions[row][7].get_piece().as_moved:
+                        if board_positions[row][5].get_piece() == None and board_positions[row][6].get_piece() == None:
+                            valid_positions.append((row, column + 2))
             elif self.color == "black":
-                if board_positions[row][0].get_piece().name == "rook" and not board_positions[row][0].get_piece().as_moved:
-                    if board_positions[row][1].get_piece() == None and board_positions[row][2].get_piece() == None:
-                        valid_positions.append((row, column - 2))
-                if board_positions[row][7].get_piece().name == "rook" and not board_positions[row][7].get_piece().as_moved:
-                    if board_positions[row][4].get_piece() == None and board_positions[row][5].get_piece() == None and board_positions[row][6].get_piece() == None:
-                        valid_positions.append((row, column + 2))
+                if board_positions[row][0].get_piece() != None:
+                    if board_positions[row][0].get_piece().name == "rook" and not board_positions[row][0].get_piece().as_moved:
+                        if board_positions[row][1].get_piece() == None and board_positions[row][2].get_piece() == None:
+                            valid_positions.append((row, column - 2))
+                if board_positions[row][7].get_piece() != None:
+                    if board_positions[row][7].get_piece().name == "rook" and not board_positions[row][7].get_piece().as_moved:
+                        if board_positions[row][4].get_piece() == None and board_positions[row][5].get_piece() == None and board_positions[row][6].get_piece() == None:
+                            valid_positions.append((row, column + 2))
 
         return valid_positions
