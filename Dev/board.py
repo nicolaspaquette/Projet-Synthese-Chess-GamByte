@@ -19,6 +19,9 @@ class board:
         self.initialize_starting_positions()
         self.selected_square = None
         self.en_passant_piece = None
+        self.move_list = {}
+        self.white_king_pos = None
+        self.black_king_pos = None
 
     def initialize_board(self):
         position = []
@@ -102,9 +105,8 @@ class board:
         square = self.position[row][column]
         piece = square.get_piece()
 
-        #if piece != None: #and piece.color == self.human_player_color:
-        if piece != None and piece.color == self.human_player_color:
-            print("you choose your piece: " + piece.name + " at " + str(row) + " " + str(column))
+        if piece != None: #and piece.color == self.human_player_color:
+        #if piece != None and piece.color == self.human_player_color:
             self.selected_square = square
             return True
         else:
@@ -121,6 +123,8 @@ class board:
         moving_piece = self.selected_square.get_piece()
         self.selected_square.remove_piece()
         self.position[final_row][final_column].add_piece(moving_piece)
+
+        self.get_kings_positions()
 
         #as moved
         if not moving_piece.as_moved:
@@ -141,12 +145,14 @@ class board:
         if self.selected_square in valid_positions:
             valid_positions.remove(self.selected_square)
 
+        self.is_king_in_check(self.white_king_pos[0], self.white_king_pos[1])
+
         return valid_positions
 
     def unmake_move(self, actual_row, actual_column, original_row, original_column): # or board copy
         pass
 
-    def get_valid_positions(self, starting_row, starting_column):
+    def get_valid_piece_positions(self, starting_row, starting_column):
         possible_squares = []
         valid_positions = []
         piece = self.selected_square.get_piece()
@@ -154,8 +160,51 @@ class board:
         valid_positions = piece.get_valid_positions(self.position, starting_row, starting_column)
         return valid_positions
 
-    def is_king_in_check(self):
+    def get_all_valid_positions(self, color):
+        all_valid_positions = []
+
+        #all squares being attacked
+        for row in self.position:
+            for square in row:
+                if square.get_piece() != None:
+                    if square.get_piece().color == color:
+                        all_valid_positions += square.get_piece().get_valid_positions(self.position, square.row, square.column)
+
+        return all_valid_positions
+
+    def is_king_in_check(self, king_row, king_column):
+        king = self.position[king_row][king_column].get_piece()
+        all_opponent_moves = []
+
+        if king.color == "white":
+            color = "black"
+        else:
+            color = "white"
+
+        all_opponent_moves = self.get_all_valid_positions(color)
+        print((king_row, king_column))
+        print(all_opponent_moves)
+
+        #verify is king is attacked
+        if (king_row, king_column) in all_opponent_moves:
+            print("KING IN CHECK")
+            return True
+        else:
+            print("KING NOT IN CHECK")
+            return False           
+
+    def king_possible_positions(self, king_row, king_column):
         pass
+
+    def get_kings_positions(self):
+
+        for row in self.position:
+            for square in row:
+                if square.get_piece() != None:
+                    if square.get_piece().name == "king" and square.get_piece().color == "white":
+                        self.white_king_pos = (square.row, square.column)
+                    elif square.get_piece().name == "king" and square.get_piece().color == "black":
+                        self.black_king_pos = (square.row, square.column)
 
     def en_passant_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions):
         if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
