@@ -261,15 +261,18 @@ class board:
 
         if final_row < 7 and final_row > 0 and final_column < 7 and final_column > 0:
             if self.position[final_row][final_column].get_piece() != None and (self.position[final_row - 1][final_column].get_piece() != None or self.position[final_row + 1][final_column].get_piece() != None):
+
                 if self.position[final_row - 1][final_column].get_piece() != None:
                     if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row - 1][final_column].get_piece().name == "pawn":
                         if self.position[final_row][final_column].get_piece().color != self.position[final_row - 1][final_column].get_piece().color and self.position[final_row - 1][final_column].get_piece().can_be_captured_en_passant:
-                            self.position[final_row - 1][final_column].remove_piece()
+                            if starting_column != final_column:
+                                self.position[final_row - 1][final_column].remove_piece()
 
                 if self.position[final_row + 1][final_column].get_piece() != None:
                     if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row + 1][final_column].get_piece().name == "pawn":
                         if self.position[final_row][final_column].get_piece().color != self.position[final_row + 1][final_column].get_piece().color and self.position[final_row + 1][final_column].get_piece().can_be_captured_en_passant:
-                            self.position[final_row + 1][final_column].remove_piece()
+                            if starting_column != final_column:
+                                self.position[final_row + 1][final_column].remove_piece()
 
     def castling_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions):
         if moving_piece.name == "king" and starting_row == final_row:
