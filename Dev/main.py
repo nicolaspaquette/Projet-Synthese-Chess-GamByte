@@ -80,6 +80,8 @@ class chess_game():
                 if self.mouse != None:
                     for button in self.button_positions: # button: [texte, left, top, width, height]
                         if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
+
+                            #click on button
                             if button[0] == "PLAY":
                                 self.select_color = True
                             elif button[0] == "White":
@@ -99,7 +101,7 @@ class chess_game():
                                 self.is_menu = False
                                 self.is_game = True
                             elif button[0] == "HISTORY":
-                                print("history")
+                                pass
 
             elif self.is_game:
                 if not self.are_players_initialized:
@@ -117,26 +119,31 @@ class chess_game():
                     square_size = self.board.position[0][0].size
                     if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
                         if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
+
+                            #row and column selection
                             row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
                             column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
 
+                            #piece is selected
                             if self.board.choose_piece_to_move(row, column):
                                 self.starting_row = row
                                 self.starting_column = column
                                 valid_positions = self.board.get_valid_positions(self.starting_row, self.starting_column)
                             
+                            #piece destination is selected
                             if self.starting_row != None and self.starting_column != None and (row != self.starting_row or column != self.starting_column):
                                 if self.board.verify_move(valid_positions, row, column):
-                                    print("move is valid")
                                     valid_positions = self.board.move_piece(self.starting_row, self.starting_column, row, column, valid_positions)
                                     self.starting_row = None
                                     self.starting_column = None
 
+                #show possible moves
                 if self.starting_row != None and self.starting_column != None:
                     self.show_valid_positions(valid_positions)
 
             elif self.is_visualize_game:
                 self.show_visualize_game()
+
             elif self.is_history:
                 self.show_history()
             
@@ -147,10 +154,13 @@ class chess_game():
 
         pygame.quit()
 
+#########################################################################################################
+
     def show_menu(self):
         pygame.display.set_caption("Main Menu")
         self.screen.fill(self.grey)
 
+        #titles
         font = pygame.font.SysFont("Arial", 75)
         title_1 = font.render("CHESS ENGINE", True, self.black)
         title_1_rect = title_1.get_rect(center=(self.width//2, 60))
@@ -159,6 +169,7 @@ class chess_game():
         self.screen.blit(title_1, title_1_rect)
         self.screen.blit(title_2, title_2_rect)
 
+        #buttons
         pos_play = self.draw_button("PLAY", 30, self.white, self.black, 100, 300, 200, 10, True)
         pos_history = self.draw_button("HISTORY", 30, self.white, self.black, 100, 600, 175, 10, True)
         if self.select_color:
@@ -191,6 +202,7 @@ class chess_game():
         letter_value = 0
         font = pygame.font.SysFont("Arial", 30)
 
+        #letter/number of squares depending orientation of board
         if self.selected_color == "white":
             row_values = self.white_human_row_values
             column_values = self.white_human_column_values
@@ -199,6 +211,8 @@ class chess_game():
             column_values = self.black_human_column_values
         
         for row in self.board.position:
+
+            #draw row value
             value_text = font.render(column_values[value], True, self.black)
             value_text_rect = value_text.get_rect(center=(self.starting_pos_left - 20 , top + 35))
             self.screen.blit(value_text, value_text_rect)
@@ -211,9 +225,11 @@ class chess_game():
                     color = self.orange
                     color_switch = True
 
+                #draw squares
                 square_size = square.size
                 pygame.draw.rect(self.screen, color, (left, top, square_size, square_size))
 
+                #show pieces on squares
                 square_piece = square.get_piece()
                 if square_piece != None:
                     path = str(self.path + square_piece.color + "_" + square_piece.name + ".png")
@@ -222,6 +238,7 @@ class chess_game():
                     piece_image.convert()
                     self.screen.blit(piece_image, (left, top, square_size, square_size))
 
+                #draw column letter
                 if value == 7:
                     letter_text = font.render(row_values[letter_value], True, self.black)
                     letter_text_rect = letter_text.get_rect(center=(left + square_size/2, top + square_size*2 + 20))

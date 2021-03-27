@@ -16,7 +16,6 @@ class board:
         self.human_player_color = player_color
         self.is_game_over = False
         self.position = self.initialize_board()
-        #self.get_board_layout()
         self.initialize_starting_positions()
         self.selected_square = None
         self.en_passant_piece = None
@@ -97,33 +96,14 @@ class board:
                 piece = square.get_piece()
                 if piece != None:
                     piece.initialized_row = i
-                    piece.initialized_column = j
-
-    def get_board_layout(self):
-        show_pieces = []
-        for row in self.position:
-            for sqr in row:
-                if sqr.get_piece() == None:
-                    show_pieces.append("      ")
-                else:
-                    show_pieces.append(sqr.get_piece().color + sqr.get_piece().sign)
-            print(show_pieces)
-            show_pieces = []          
-
-    def get_piece_in_square(self, row , column):
-        square = self.position[row][column]
-        piece = square.get_piece()
-        if piece != None:
-            print(piece.color, piece.name, piece.initialized_row, piece.initialized_column)
-
-    def get_square_position(self, row , column):
-        square = self.position[row][column]
+                    piece.initialized_column = j     
 
     def choose_piece_to_move(self, row, column):
         square = self.position[row][column]
         piece = square.get_piece()
-        if piece != None: #and piece.color == self.human_player_color:
-        #if piece != None and piece.color == self.human_player_color:
+
+        #if piece != None: #and piece.color == self.human_player_color:
+        if piece != None and piece.color == self.human_player_color:
             print("you choose your piece: " + piece.name + " at " + str(row) + " " + str(column))
             self.selected_square = square
             return True
@@ -142,29 +122,22 @@ class board:
         self.selected_square.remove_piece()
         self.position[final_row][final_column].add_piece(moving_piece)
 
-        if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
-            if self.en_passant_piece.color == moving_piece.color:
-                self.en_passant_piece.can_be_captured_en_passant = False
-                self.en_passant_piece = None
+        #as moved
+        if not moving_piece.as_moved:
+            moving_piece.as_moved = True
 
-        if moving_piece.name == "pawn" and starting_row == moving_piece.initialized_row and (final_row - starting_row == 2 or final_row - starting_row == -2):
-            print("double move")
-            moving_piece.can_be_captured_en_passant = True
-            self.en_passant_piece = moving_piece
+        #pawn promotion to queen
+        if (moving_piece.name == "pawn" and moving_piece.initialized_row == 6 and final_row == 0) or moving_piece.name == "pawn" and moving_piece.initialized_row == 1 and final_row == 7:
+            self.position[final_row][final_column].remove_piece()
+            self.position[final_row][final_column].add_piece(queen(moving_piece.color))
 
+        #verify en passant
+        self.en_passant_verification(moving_piece, starting_row, starting_column, final_row, final_column, valid_positions)
 
-        if final_column - 1 >= 0 and final_column + 1 <= 7:
-            if self.position[final_row][final_column].get_piece() != None and (self.position[final_row - 1][final_column].get_piece() != None or self.position[final_row + 1][final_column].get_piece() != None):
-                if self.position[final_row - 1][final_column].get_piece() != None:
-                    if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row - 1][final_column].get_piece().name == "pawn":
-                        if self.position[final_row][final_column].get_piece().color != self.position[final_row - 1][final_column].get_piece().color and self.position[final_row - 1][final_column].get_piece().can_be_captured_en_passant:
-                            self.position[final_row - 1][final_column].remove_piece()
+        #verify castling
+        self.castling_verification(moving_piece, starting_row, starting_column, final_row, final_column, valid_positions)
 
-                if self.position[final_row + 1][final_column].get_piece() != None:
-                    if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row + 1][final_column].get_piece().name == "pawn":
-                        if self.position[final_row][final_column].get_piece().color != self.position[final_row + 1][final_column].get_piece().color and self.position[final_row + 1][final_column].get_piece().can_be_captured_en_passant:
-                            self.position[final_row + 1][final_column].remove_piece()
-                    
+        #do not show own square as potential move for the next move
         if self.selected_square in valid_positions:
             valid_positions.remove(self.selected_square)
 
@@ -183,7 +156,50 @@ class board:
 
     def is_king_in_check(self):
         pass
-        
+
+    def en_passant_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions):
+        if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
+            if self.en_passant_piece.color == moving_piece.color:
+                self.en_passant_piece.can_be_captured_en_passant = False
+                self.en_passant_piece = None
+
+        if moving_piece.name == "pawn" and starting_row == moving_piece.initialized_row and (final_row - starting_row == 2 or final_row - starting_row == -2):
+            moving_piece.can_be_captured_en_passant = True
+            self.en_passant_piece = moving_piece
+
+        if final_row < 7 and final_row > 0 and final_column < 7 and final_column > 0:
+            if self.position[final_row][final_column].get_piece() != None and (self.position[final_row - 1][final_column].get_piece() != None or self.position[final_row + 1][final_column].get_piece() != None):
+                if self.position[final_row - 1][final_column].get_piece() != None:
+                    if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row - 1][final_column].get_piece().name == "pawn":
+                        if self.position[final_row][final_column].get_piece().color != self.position[final_row - 1][final_column].get_piece().color and self.position[final_row - 1][final_column].get_piece().can_be_captured_en_passant:
+                            self.position[final_row - 1][final_column].remove_piece()
+
+                if self.position[final_row + 1][final_column].get_piece() != None:
+                    if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row + 1][final_column].get_piece().name == "pawn":
+                        if self.position[final_row][final_column].get_piece().color != self.position[final_row + 1][final_column].get_piece().color and self.position[final_row + 1][final_column].get_piece().can_be_captured_en_passant:
+                            self.position[final_row + 1][final_column].remove_piece()
+
+    def castling_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions):
+        if moving_piece.name == "king" and starting_row == final_row:
+            if starting_column - final_column == 2: # left side castling
+                if moving_piece.color == "white":
+                    rook_col = 3 
+                else:
+                    rook_col = 2
+                rook = self.position[final_row][0].get_piece()
+                rook.as_moved = True
+                self.position[final_row][0].remove_piece()
+                self.position[final_row][rook_col].add_piece(rook)
+
+            elif starting_column - final_column == -2: #right right castling
+                if moving_piece.color == "white":
+                    rook_col = 5 
+                else:
+                    rook_col = 4
+                rook = self.position[final_row][7].get_piece()
+                rook.as_moved = True
+                self.position[final_row][7].remove_piece()
+                self.position[final_row][rook_col].add_piece(rook)
 
 
 

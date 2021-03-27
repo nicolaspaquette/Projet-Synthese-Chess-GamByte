@@ -13,7 +13,7 @@ class queen(piece):
     def get_valid_positions(self, board_positions, row, column):
         valid_positions = []
 
-        directions = [(-1, 0), (1, 0), (0, -1), (0, -1),(-1,-1), (-1,1), (1,-1), (1,1)]
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1),(-1,-1), (-1,1), (1,-1), (1,1)]
 
         for direction in directions:
             checking_row = row
