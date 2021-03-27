@@ -22,9 +22,9 @@ class queen(piece):
                 checking_row += direction[0]
                 checking_column += direction[1]
                 if checking_row < 8 and checking_row > -1 and checking_column < 8 and checking_column > -1:
-                    if board_positions[checking_row][checking_column].get_piece() == None:
+                    if board_positions[checking_row][checking_column].get_piece() == None or (board_positions[checking_row][checking_column].get_piece().color != self.color and board_positions[checking_row][checking_column].get_piece().name == "king"):
                         valid_positions.append((checking_row, checking_column))
-                    elif board_positions[checking_row][checking_column].get_piece().color != self.color:
+                    elif board_positions[checking_row][checking_column].get_piece().color != self.color and board_positions[checking_row][checking_column].get_piece().name != "king":
                         valid_positions.append((checking_row, checking_column))
                         break
                     else:

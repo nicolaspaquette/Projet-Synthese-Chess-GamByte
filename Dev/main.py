@@ -128,6 +128,7 @@ class chess_game():
                             if self.board.choose_piece_to_move(row, column):
                                 self.starting_row = row
                                 self.starting_column = column
+                                self.board.get_kings_positions()
                                 valid_positions = self.board.get_valid_piece_positions(self.starting_row, self.starting_column)
                             
                             #piece destination is selected
