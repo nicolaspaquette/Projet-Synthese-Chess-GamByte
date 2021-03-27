@@ -162,13 +162,9 @@ class board:
 
         valid_positions = piece.get_valid_positions(self.position, starting_row, starting_column)
 
-        #remove positions thad doesnt block checks if king in check
-        if piece.color == "white":
-            if piece.name != "king" and self.is_king_in_check(self.position, self.white_king_pos[0], self.white_king_pos[1]):
-                valid_positions = self.get_block_check_positions(valid_positions, starting_row, starting_column)
-        else:
-            if piece.name != "king" and self.is_king_in_check(self.position, self.black_king_pos[0], self.black_king_pos[1]):
-                valid_positions = self.get_block_check_positions(valid_positions, starting_row, starting_column)
+        #remove positions thad doesnt block checks if king in check and pinned pieces cannot move
+        if piece.name != "king":
+            valid_positions = self.get_block_check_positions(valid_positions, starting_row, starting_column)
 
         #remove valid position if king is in check
         if piece.name == "king":
