@@ -67,7 +67,7 @@ class chess_game():
         is_running = True
         clock = pygame.time.Clock()
 
-        while is_running:
+        while is_running: # closes the window if checkmate
             clock.tick(self.fps)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -180,8 +180,14 @@ class chess_game():
                                 self.show_valid_positions(self.player_turn.valid_positions)
                     # ai opponent
                     else:
-                        print("ai move")
+                        self.player_turn.play_move()
                         self.change_player_turn()
+
+                #after checkmate, return to main menu
+                #if self.board.is_game_over():
+                #    self.is_menu = True
+                #    self.is_game = False
+                #    self.select_color = False
 
                 ##################################################### GAME LOOP ###################################################
 
@@ -313,8 +319,10 @@ class chess_game():
         if self.game_started:
             turn_to_play = "Turn to play: "+ self.player_turn.color
             turn_to_play_text = font.render(turn_to_play, True, self.black)
-            turn_to_play_text_rect = turn_to_play_text.get_rect(center=(8*square_size//2 + self.starting_pos_left, 25))
+            turn_to_play_text_rect = turn_to_play_text.get_rect(center=(150, 25))
             self.screen.blit(turn_to_play_text, turn_to_play_text_rect)
+
+            self.show_checks_and_checkmates()
 
     def show_history(self):
         pass
@@ -359,9 +367,37 @@ class chess_game():
         else:
             self.player_turn = self.players[0]
 
+        if self.board.color_to_play == "white":
+            self.board.color_to_play = "black"
+        else:
+            self.board.color_to_play = "white"
+
     def show_valid_positions(self, valid_positions):
         for position in valid_positions:
             pygame.draw.circle(self.screen, self.green, (self.starting_pos_left + (75 * position[1]) + 75 / 2, self.starting_pos_top + (75 * position[0]) + 75 / 2), 5)
+
+    def show_checks_and_checkmates(self):
+        if self.board.white_king_pos != None and self.board.black_king_pos != None:
+            font = pygame.font.SysFont("Arial", 30)
+            if self.board.is_king_in_checkmate(self.board.white_king_pos[0], self.board.white_king_pos[1]):
+                checkmate = font.render("White King Checkmate", True, self.black)
+                checkmate_rect = checkmate.get_rect(center=(525, 25))
+                self.screen.blit(checkmate, checkmate_rect)
+
+            elif self.board.is_king_in_checkmate(self.board.black_king_pos[0], self.board.black_king_pos[1]):
+                checkmate = font.render("Black King Checkmate", True, self.black)
+                checkmate_rect = checkmate.get_rect(center=(525, 25))
+                self.screen.blit(checkmate, checkmate_rect)
+
+            elif self.board.is_king_in_check(self.board.position, self.board.white_king_pos[0], self.board.white_king_pos[1]):
+                check = font.render("White King Check", True, self.black)
+                check_rect = check.get_rect(center=(550, 25))
+                self.screen.blit(check, check_rect)
+
+            elif self.board.is_king_in_check(self.board.position, self.board.black_king_pos[0], self.board.black_king_pos[1]):
+                check = font.render("Black King Check", True, self.black)
+                check_rect = check.get_rect(center=(550, 25))
+                self.screen.blit(check, check_rect)
 
 if __name__ == "__main__":
     chess_game = chess_game()

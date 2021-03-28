@@ -15,7 +15,6 @@ import copy
 class board:
     def __init__(self, human_color):
         self.human_player_color = human_color
-        self.is_game_over = False
         self.position = self.initialize_board()
         self.initialize_starting_positions()
         self.selected_square = None
@@ -23,6 +22,7 @@ class board:
         self.move_list = {}
         self.white_king_pos = None
         self.black_king_pos = None
+        self.color_to_play = "white"
 
     def initialize_board(self):
         position = []
@@ -148,16 +148,21 @@ class board:
 
         #verify if king is checkmate
         self.get_kings_positions()
-        in_check = self.is_king_in_check(self.position, self.white_king_pos[0], self.white_king_pos[1])
+        if self.color_to_play == "white":
+            king_pos = self.black_king_pos
+        else:
+            king_pos = self.white_king_pos
+
+        in_check = self.is_king_in_check(self.position, king_pos[0], king_pos[1])
         if in_check:
-            in_checkmate = self.is_king_in_checkmate(self.white_king_pos[0], self.white_king_pos[1])
+            in_checkmate = self.is_king_in_checkmate(king_pos[0], king_pos[1])
             
         return valid_positions
 
-    def get_valid_piece_positions(self, starting_row, starting_column, verify_checkmate):
+    def get_valid_piece_positions(self, starting_row, starting_column, verify):
         possible_squares = []
         valid_positions = []
-        if not verify_checkmate:
+        if not verify:
             piece = self.selected_square.get_piece()
         else:
             piece = self.position[starting_row][starting_column].get_piece()
@@ -251,7 +256,7 @@ class board:
 
         #verify if king is attacked
         if (king_row, king_column) in all_opponent_moves:
-            print("CHECK")
+            print(king.color + " king CHECK")
             return True
         else:
             return False
@@ -274,6 +279,13 @@ class board:
             return True
         else:
             return False
+
+    def is_game_over(self):
+        if self.white_king_pos != None and self.black_king_pos != None:
+            if self.is_king_in_checkmate(self.white_king_pos[0], self.white_king_pos[1]) or self.is_king_in_checkmate(self.black_king_pos[0], self.black_king_pos[1]):
+                return True
+            else:
+                return False
 
     def get_kings_positions(self):
         for row in self.position:
