@@ -61,6 +61,7 @@ class chess_game():
 
         self.starting_row = None
         self.starting_column = None
+        self.game_mode = None
 
     def main(self):
         is_running = True
@@ -82,8 +83,12 @@ class chess_game():
                         if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
 
                             #click on button
-                            if button[0] == "PLAY":
+                            if button[0] == "PLAY VS HUMAN" or button[0] == "PLAY VS AI":
                                 self.select_color = True
+                                if button[0] == "PLAY VS HUMAN":
+                                    self.game_mode = "Human"
+                                else:
+                                    self.game_mode = "AI"
                             elif button[0] == "White":
                                 self.selected_color = "white"
                                 self.is_menu = False
@@ -145,33 +150,38 @@ class chess_game():
                         if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
                             self.show_valid_positions(self.player_turn.valid_positions)
 
-                # ai player turn    
+                # opponent player turn    
                 else:
+                    # human opponent
+                    if self.game_mode == "Human":
+                        if self.mouse != None:
+                            square_size = self.board.position[0][0].size
+                            if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
+                                if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
 
-                    if self.mouse != None:
-                        square_size = self.board.position[0][0].size
-                        if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
-                            if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
+                                    #row and column selection
+                                    row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
+                                    column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
 
-                                #row and column selection
-                                row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
-                                column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
+                                    #piece is selected
+                                    self.player_turn.choose_move(row, column)
 
-                                #piece is selected
-                                self.player_turn.choose_move(row, column)
+                                    #piece destination is selected
+                                    if self.player_turn.starting_row != None and self.player_turn.starting_column != None and (row != self.player_turn.starting_row or column != self.player_turn.starting_column):
+                                        if self.player_turn.verify_move(row, column):
+                                            self.player_turn.valid_positions = self.player_turn.play_move(row, column)
+                                            self.player_turn.starting_row = None
+                                            self.player_turn.starting_column = None
+                                            self.change_player_turn()
 
-                                #piece destination is selected
-                                if self.player_turn.starting_row != None and self.player_turn.starting_column != None and (row != self.player_turn.starting_row or column != self.player_turn.starting_column):
-                                    if self.player_turn.verify_move(row, column):
-                                        self.player_turn.valid_positions = self.player_turn.play_move(row, column)
-                                        self.player_turn.starting_row = None
-                                        self.player_turn.starting_column = None
-                                        self.change_player_turn()
-
-                    #show possible moves
-                    if self.player_turn == self.players[1]:
-                        if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
-                            self.show_valid_positions(self.player_turn.valid_positions)
+                        #show possible moves
+                        if self.player_turn == self.players[1]:
+                            if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
+                                self.show_valid_positions(self.player_turn.valid_positions)
+                    # ai opponent
+                    else:
+                        print("ai move")
+                        self.change_player_turn()
 
                 ##################################################### GAME LOOP ###################################################
 
@@ -202,12 +212,23 @@ class chess_game():
         self.screen.blit(title_2, title_2_rect)
 
         #buttons
-        pos_play = self.draw_button("PLAY", 30, self.white, self.black, 100, 300, 200, 10, True)
+        pos_play_human = self.draw_button("PLAY VS HUMAN", 30, self.white, self.black, 400, 300, 70, 10, False)
+        pos_play_ai = self.draw_button("PLAY VS AI", 30, self.white, self.black, 800, 300, 100, 10, False)
         pos_history = self.draw_button("HISTORY", 30, self.white, self.black, 100, 600, 175, 10, True)
         if self.select_color:
-            pos_white = self.draw_button("White", 30, self.black, self.white, 450, 380, 10, 10, False)
-            pos_random = self.draw_button("Random", 30, self.white, self.light_black, 100, 380, 10, 10, True)
-            pos_black = self.draw_button("Black", 30, self.white, self.black, 750, 380, 10, 10, False)
+            font = pygame.font.SysFont("Arial", 30)
+            mode = "Game mode selected: Human VS " + self.game_mode
+            game_mode = font.render(mode, True, self.black)
+            game_mode_rect = game_mode.get_rect(center=(self.width//2, 240))
+
+            choose_color = font.render("Choose color to start game:", True, self.black)
+            choose_color_text = choose_color.get_rect(center=(self.width//2, 370))
+            self.screen.blit(game_mode, game_mode_rect)
+            self.screen.blit(choose_color, choose_color_text)
+
+            pos_white = self.draw_button("White", 30, self.black, self.white, 450, 430, 10, 10, False)
+            pos_random = self.draw_button("Random", 30, self.white, self.light_black, 100, 430, 10, 10, True)
+            pos_black = self.draw_button("Black", 30, self.white, self.black, 750, 430, 10, 10, False)
             if self.color_button_positions:
                 self.color_button_positions = False
                 self.button_positions.append(pos_white)
@@ -216,7 +237,8 @@ class chess_game():
 
         if self.menu_button_positions:
             self.menu_button_positions = False
-            self.button_positions.append(pos_play)
+            self.button_positions.append(pos_play_human)
+            self.button_positions.append(pos_play_ai)
             self.button_positions.append(pos_history)
 
     def show_game(self):
@@ -314,12 +336,16 @@ class chess_game():
 
     def initialize_players(self):
         if self.selected_color == "white":
-            ai_color = "black"
+            opponent_color = "black"
         else:
-            ai_color = "white"
+            opponent_color = "white"
 
-        self.players.append(human(self.selected_color, self.board))
-        self.players.append(human(ai_color, self.board))
+        if self.game_mode == "Human":
+            self.players.append(human(self.selected_color, self.board))
+            self.players.append(human(opponent_color, self.board))
+        else:
+            self.players.append(human(self.selected_color, self.board))
+            self.players.append(ai(opponent_color, self.board))
 
     def start_game(self):
         if self.players[0].color == "white":
