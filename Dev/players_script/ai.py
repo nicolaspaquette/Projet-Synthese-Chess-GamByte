@@ -5,5 +5,5 @@ class ai(player):
         self.color = color
         self.board = board
 
-    def choose_move(self):
+    def play_move(self):
         print("ai move")

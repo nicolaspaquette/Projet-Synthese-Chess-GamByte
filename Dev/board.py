@@ -13,8 +13,8 @@ from pawn import pawn
 import copy
 
 class board:
-    def __init__(self, player_color):
-        self.human_player_color = player_color
+    def __init__(self, human_color):
+        self.human_player_color = human_color
         self.is_game_over = False
         self.position = self.initialize_board()
         self.initialize_starting_positions()
@@ -102,12 +102,12 @@ class board:
                     piece.initialized_row = i
                     piece.initialized_column = j     
 
-    def choose_piece_to_move(self, row, column):
+    def choose_piece_to_move(self, row, column, player_color):
         square = self.position[row][column]
         piece = square.get_piece()
 
-        if piece != None: #and piece.color == self.human_player_color: ###
-        #if piece != None and piece.color == self.human_player_color: ###
+        #if piece != None: #and piece.color == self.human_player_color: ###
+        if piece != None and piece.color == player_color: ###
             self.selected_square = square
             return True
         else:
@@ -269,7 +269,7 @@ class board:
                     block_positions += self.get_block_check_positions(valid_positions, square.row, square.column)
         
         if len(block_positions) == 0 and len(king_positions) == 0:
-            king = self.position[row][col].get_piece()
+            king = self.position[king_row][king_column].get_piece()
             print(king.color + " king CHECKMATE")
             return True
         else:

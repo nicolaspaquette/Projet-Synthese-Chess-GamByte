@@ -115,32 +115,65 @@ class chess_game():
                     self.game_started = True
                     self.start_game()
 
-                if self.mouse != None:
-                    square_size = self.board.position[0][0].size
-                    if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
-                        if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
+                ##################################################### GAME LOOP ###################################################
+                
+                # human player turn
+                if self.player_turn == self.players[0]:
 
-                            #row and column selection
-                            row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
-                            column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
+                    if self.mouse != None:
+                        square_size = self.board.position[0][0].size
+                        if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
+                            if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
 
-                            #piece is selected
-                            if self.board.choose_piece_to_move(row, column):
-                                self.starting_row = row
-                                self.starting_column = column
-                                self.board.get_kings_positions()
-                                valid_positions = self.board.get_valid_piece_positions(self.starting_row, self.starting_column, False)
-                            
-                            #piece destination is selected
-                            if self.starting_row != None and self.starting_column != None and (row != self.starting_row or column != self.starting_column):
-                                if self.board.verify_move(valid_positions, row, column):
-                                    valid_positions = self.board.move_piece(self.starting_row, self.starting_column, row, column, valid_positions)
-                                    self.starting_row = None
-                                    self.starting_column = None
+                                #row and column selection
+                                row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
+                                column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
 
-                #show possible moves
-                if self.starting_row != None and self.starting_column != None:
-                    self.show_valid_positions(valid_positions)
+                                #piece is selected
+                                self.player_turn.choose_move(row, column)
+
+                                #piece destination is selected
+                                if self.player_turn.starting_row != None and self.player_turn.starting_column != None and (row != self.player_turn.starting_row or column != self.player_turn.starting_column):
+                                    if self.player_turn.verify_move(row, column):
+                                        self.player_turn.valid_positions = self.player_turn.play_move(row, column)
+                                        self.player_turn.starting_row = None
+                                        self.player_turn.starting_column = None
+                                        self.change_player_turn()
+
+                    #show possible moves
+                    if self.player_turn == self.players[0]:
+                        if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
+                            self.show_valid_positions(self.player_turn.valid_positions)
+
+                # ai player turn    
+                else:
+
+                    if self.mouse != None:
+                        square_size = self.board.position[0][0].size
+                        if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
+                            if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
+
+                                #row and column selection
+                                row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
+                                column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
+
+                                #piece is selected
+                                self.player_turn.choose_move(row, column)
+
+                                #piece destination is selected
+                                if self.player_turn.starting_row != None and self.player_turn.starting_column != None and (row != self.player_turn.starting_row or column != self.player_turn.starting_column):
+                                    if self.player_turn.verify_move(row, column):
+                                        self.player_turn.valid_positions = self.player_turn.play_move(row, column)
+                                        self.player_turn.starting_row = None
+                                        self.player_turn.starting_column = None
+                                        self.change_player_turn()
+
+                    #show possible moves
+                    if self.player_turn == self.players[1]:
+                        if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
+                            self.show_valid_positions(self.player_turn.valid_positions)
+
+                ##################################################### GAME LOOP ###################################################
 
             elif self.is_visualize_game:
                 self.show_visualize_game()
@@ -154,8 +187,6 @@ class chess_game():
             self.mouse = None
 
         pygame.quit()
-
-#########################################################################################################
 
     def show_menu(self):
         pygame.display.set_caption("Main Menu")
@@ -257,6 +288,12 @@ class chess_game():
                 color = self.orange
                 color_switch = True
 
+        if self.game_started:
+            turn_to_play = "Turn to play: "+ self.player_turn.color
+            turn_to_play_text = font.render(turn_to_play, True, self.black)
+            turn_to_play_text_rect = turn_to_play_text.get_rect(center=(8*square_size//2 + self.starting_pos_left, 25))
+            self.screen.blit(turn_to_play_text, turn_to_play_text_rect)
+
     def show_history(self):
         pass
 
@@ -282,15 +319,13 @@ class chess_game():
             ai_color = "white"
 
         self.players.append(human(self.selected_color, self.board))
-        self.players.append(ai(ai_color, self.board))
+        self.players.append(human(ai_color, self.board))
 
     def start_game(self):
         if self.players[0].color == "white":
             self.player_turn = self.players[0]
         else:
             self.player_turn = self.players[1]
-
-        self.player_turn.choose_move()
     
     def change_player_turn(self):
         if self.player_turn == self.players[0]:
@@ -298,15 +333,9 @@ class chess_game():
         else:
             self.player_turn = self.players[0]
 
-        self.player_turn.choose_move()
-
     def show_valid_positions(self, valid_positions):
         for position in valid_positions:
             pygame.draw.circle(self.screen, self.green, (self.starting_pos_left + (75 * position[1]) + 75 / 2, self.starting_pos_top + (75 * position[0]) + 75 / 2), 5)
-
-     
-
-####################################################################################
 
 if __name__ == "__main__":
     chess_game = chess_game()

@@ -3,5 +3,5 @@ from abc import ABC, abstractmethod
 class player(ABC):
     
     @abstractmethod
-    def choose_move(self):
+    def play_move(self):
         pass
