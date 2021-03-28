@@ -146,14 +146,21 @@ class board:
         if self.selected_square in valid_positions:
             valid_positions.remove(self.selected_square)
 
-        self.is_king_in_check(self.position, self.white_king_pos[0], self.white_king_pos[1])
-        
+        #verify if king is checkmate
+        self.get_kings_positions()
+        in_check = self.is_king_in_check(self.position, self.white_king_pos[0], self.white_king_pos[1])
+        if in_check:
+            in_checkmate = self.is_king_in_checkmate(self.white_king_pos[0], self.white_king_pos[1])
+            
         return valid_positions
 
-    def get_valid_piece_positions(self, starting_row, starting_column):
+    def get_valid_piece_positions(self, starting_row, starting_column, verify_checkmate):
         possible_squares = []
         valid_positions = []
-        piece = self.selected_square.get_piece()
+        if not verify_checkmate:
+            piece = self.selected_square.get_piece()
+        else:
+            piece = self.position[starting_row][starting_column].get_piece()
 
         if piece.color == "white":
             opponent_color = "black"
@@ -181,6 +188,18 @@ class board:
                 if position in all_opponent_moves:
                     positions_to_remove.append(position)
 
+            for position in positions_to_remove:
+                valid_positions.remove(position)
+
+            #remove positions with black piece near the king that are protected from capturing
+            positions_to_remove = []
+            for position in valid_positions:
+                board_copy = copy.deepcopy(self.position)
+                board_copy[starting_row][starting_column].remove_piece()
+                board_copy[position[0]][position[1]].add_piece(piece)
+                if self.is_king_in_check(board_copy, position[0], position[1]):
+                    positions_to_remove.append(position)
+            
             for position in positions_to_remove:
                 valid_positions.remove(position)
 
@@ -232,9 +251,29 @@ class board:
 
         #verify if king is attacked
         if (king_row, king_column) in all_opponent_moves:
+            print("CHECK")
             return True
         else:
-            return False 
+            return False
+
+    def is_king_in_checkmate(self, king_row, king_column): 
+        king = self.position[king_row][king_column].get_piece()
+        king_positions = self.get_valid_piece_positions(king_row, king_column, True)
+        valid_positions = []
+        block_positions = []
+
+        for row in self.position:
+            for square in row:
+                if square.get_piece() != None and square.get_piece().color == king.color and square.get_piece().name != "king":
+                    valid_positions = self.get_valid_piece_positions(square.row, square.column, True)
+                    block_positions += self.get_block_check_positions(valid_positions, square.row, square.column)
+        
+        if len(block_positions) == 0 and len(king_positions) == 0:
+            king = self.position[row][col].get_piece()
+            print(king.color + " king CHECKMATE")
+            return True
+        else:
+            return False
 
     def get_kings_positions(self):
         for row in self.position:

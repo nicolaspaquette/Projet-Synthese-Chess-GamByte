@@ -129,7 +129,7 @@ class chess_game():
                                 self.starting_row = row
                                 self.starting_column = column
                                 self.board.get_kings_positions()
-                                valid_positions = self.board.get_valid_piece_positions(self.starting_row, self.starting_column)
+                                valid_positions = self.board.get_valid_piece_positions(self.starting_row, self.starting_column, False)
                             
                             #piece destination is selected
                             if self.starting_row != None and self.starting_column != None and (row != self.starting_row or column != self.starting_column):
