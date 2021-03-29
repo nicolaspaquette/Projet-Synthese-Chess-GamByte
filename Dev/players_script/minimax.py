@@ -9,7 +9,7 @@ class minimax(move_strategy):
         self.board = board
         self.color = ai_color
         self.number_of_searches = 0
-        self.depth = 3
+        self.depth = 2
 
     def select_move(self):
         depth = self.depth
@@ -50,7 +50,7 @@ class minimax(move_strategy):
             
             for move in all_valid_moves:
                 valid_positions = board.get_valid_piece_positions(move[0], move[1], True)
-                board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True)
+                board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True, False)
                 
                 evaluation = self.minimax_search(board, depth - 1, alpha, beta, False)[0]
                 board.undo_last_move_done()
@@ -71,7 +71,7 @@ class minimax(move_strategy):
             
             for move in all_valid_moves:
                 valid_positions = board.get_valid_piece_positions(move[0], move[1], True)
-                board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True)
+                board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True, False)
 
                 evaluation = self.minimax_search(board, depth - 1, alpha, beta, True)[0]
                 board.undo_last_move_done()
