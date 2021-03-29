@@ -66,6 +66,7 @@ class chess_game():
     def main(self):
         is_running = True
         clock = pygame.time.Clock()
+        wait_time = 0
 
         while is_running: # closes the window if checkmate
             clock.tick(self.fps)
@@ -114,12 +115,15 @@ class chess_game():
                     self.initialize_players()
                     self.are_players_initialized = True
 
-                self.show_game()
 
                 if not self.game_started:
                     self.game_started = True
                     self.start_game()
 
+                self.show_game()
+                #self.window.blit(self.screen, (0,0))
+                #pygame.display.update()
+                
                 ##################################################### GAME LOOP ###################################################
                 
                 # human player turn
@@ -180,11 +184,14 @@ class chess_game():
                         if self.player_turn == self.players[1]:
                             if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
                                 self.show_valid_positions(self.player_turn.valid_positions)
+
                     # ai opponent
                     else:
-                        self.player_turn.play_move()
-                        self.change_player_turn()
-                        self.show_game()
+                        if wait_time > 0:
+                            self.player_turn.play_move()
+                            self.change_player_turn()
+
+                    wait_time += 1
 
                 #after checkmate, return to main menu
                 #if self.board.is_game_over():

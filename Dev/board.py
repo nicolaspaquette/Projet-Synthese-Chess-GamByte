@@ -1,4 +1,5 @@
 from square import square
+from move_done import move_done
 
 import sys
 from pathlib import Path
@@ -23,6 +24,7 @@ class board:
         self.white_king_pos = None
         self.black_king_pos = None
         self.color_to_play = "white"
+        self.list_moves_done = []
 
     def initialize_board(self):
         position = []
@@ -120,12 +122,17 @@ class board:
             return False
 
     def move_piece(self, starting_row, starting_column, final_row, final_column, valid_positions, in_minimax):
+        last_move_done = move_done(self.position[starting_row][starting_column].get_piece(), starting_row, starting_column, final_row, final_column)
+
         if not in_minimax:
             moving_piece = self.selected_square.get_piece()
             self.selected_square.remove_piece()
         else:
             moving_piece = self.position[starting_row][starting_column].get_piece()
             self.position[starting_row][starting_column].remove_piece()
+
+        if self.position[final_row][final_column].get_piece() != None:
+            last_move_done.get_second_piece_altered(self.position[final_row][final_column].get_piece(), final_row, final_column, None, None)
         self.position[final_row][final_column].add_piece(moving_piece)
 
         self.get_kings_positions()
@@ -140,10 +147,10 @@ class board:
             self.position[final_row][final_column].add_piece(queen(moving_piece.color))
 
         #verify en passant
-        self.en_passant_verification(moving_piece, starting_row, starting_column, final_row, final_column, valid_positions)
+        last_move_done = self.en_passant_verification(moving_piece, starting_row, starting_column, final_row, final_column, valid_positions, last_move_done)
 
         #verify castling
-        self.castling_verification(moving_piece, starting_row, starting_column, final_row, final_column, valid_positions)
+        last_move_done = self.castling_verification(moving_piece, starting_row, starting_column, final_row, final_column, valid_positions, last_move_done)
 
         #do not show own square as potential move for the next move
         if self.selected_square in valid_positions:
@@ -159,6 +166,8 @@ class board:
         in_check = self.is_king_in_check(self.position, king_pos[0], king_pos[1])
         if in_check:
             in_checkmate = self.is_king_in_checkmate(king_pos[0], king_pos[1])
+
+        self.list_moves_done.append(last_move_done)
             
         return valid_positions
 
@@ -298,7 +307,7 @@ class board:
                     elif square.get_piece().name == "king" and square.get_piece().color == "black":
                         self.black_king_pos = (square.row, square.column)
 
-    def en_passant_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions):
+    def en_passant_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions, move_done):
         if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
             if self.en_passant_piece.color == moving_piece.color:
                 self.en_passant_piece.can_be_captured_en_passant = False
@@ -315,15 +324,19 @@ class board:
                     if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row - 1][final_column].get_piece().name == "pawn":
                         if self.position[final_row][final_column].get_piece().color != self.position[final_row - 1][final_column].get_piece().color and self.position[final_row - 1][final_column].get_piece().can_be_captured_en_passant:
                             if starting_column != final_column:
+                                move_done.get_second_piece_altered(self.position[final_row - 1][final_column].get_piece(), final_row - 1, final_column, None, None)
                                 self.position[final_row - 1][final_column].remove_piece()
 
                 if self.position[final_row + 1][final_column].get_piece() != None:
                     if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row + 1][final_column].get_piece().name == "pawn":
                         if self.position[final_row][final_column].get_piece().color != self.position[final_row + 1][final_column].get_piece().color and self.position[final_row + 1][final_column].get_piece().can_be_captured_en_passant:
                             if starting_column != final_column:
+                                move_done.get_second_piece_altered(self.position[final_row + 1][final_column].get_piece(), final_row - 1, final_column, None, None)
                                 self.position[final_row + 1][final_column].remove_piece()
 
-    def castling_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions):
+        return move_done
+
+    def castling_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, valid_positions, move_done):
         if moving_piece.name == "king" and starting_row == final_row:
             if starting_column - final_column == 2: # left side castling
                 if moving_piece.color == "white":
@@ -332,6 +345,7 @@ class board:
                     rook_col = 2
                 rook = self.position[final_row][0].get_piece()
                 rook.as_moved = True
+                move_done.get_second_piece_altered(self.position[final_row][0].get_piece(), final_row, 0, final_row, rook_col)
                 self.position[final_row][0].remove_piece()
                 self.position[final_row][rook_col].add_piece(rook)
 
@@ -342,8 +356,58 @@ class board:
                     rook_col = 4
                 rook = self.position[final_row][7].get_piece()
                 rook.as_moved = True
+                move_done.get_second_piece_altered(self.position[final_row][7].get_piece(), final_row, 7, final_row, rook_col)
                 self.position[final_row][7].remove_piece()
                 self.position[final_row][rook_col].add_piece(rook)
+
+        return move_done
+
+    def undo_last_move_done(self):
+        last_move_done = self.list_moves_done[-1]
+
+        #one piece: movement only
+        if last_move_done.second_piece_altered == None:
+            self.position[last_move_done.piece_move_final_row][last_move_done.piece_move_final_column].remove_piece()
+            self.position[last_move_done.piece_move_starting_row][last_move_done.piece_move_starting_column].add_piece(last_move_done.piece_moved)
+        #two piece : capture
+        elif last_move_done.second_piece_altered != None and last_move_done.second_piece_move_final_row == None:
+            self.position[last_move_done.piece_move_final_row][last_move_done.piece_move_final_column].remove_piece()
+            self.position[last_move_done.piece_move_starting_row][last_move_done.piece_move_starting_column].add_piece(last_move_done.piece_moved)
+
+            self.position[last_move_done.second_piece_move_starting_row][last_move_done.second_piece_move_starting_column].add_piece(last_move_done.second_piece_altered)
+        #two piece : castling
+        elif last_move_done.second_piece_altered != None and last_move_done.self.second_piece_move_final_row != None:
+            self.position[last_move_done.piece_move_final_row][last_move_done.piece_move_final_column].remove_piece()
+            self.position[last_move_done.piece_move_starting_row][last_move_done.piece_move_starting_column].add_piece(last_move_done.piece_moved)
+
+            self.position[last_move_done.second_piece_move_final_row][last_move_done.second_piece_move_final_column].remove_piece()
+            self.position[last_move_done.second_piece_move_starting_row][last_move_done.second_piece_move_starting_column].add_piece(last_move_done.second_piece_altered)
+
+        #restore not as moved
+        if last_move_done.piece_move_starting_row == last_move_done.piece_moved.initialized_row and last_move_done.piece_move_starting_column == last_move_done.piece_moved.initialized_row:
+            last_move_done.piece_moved.as_moved = False
+
+        if last_move_done.second_piece_altered != None:
+            if last_move_done.second_piece_move_starting_row == last_move_done.second_piece_altered.initialized_row and last_move_done.second_piece_move_starting_column == last_move_done.second_piece_altered.initialized_row:
+                last_move_done.second_piece_altered.as_moved = False
+
+        self.list_moves_done.pop()
+
+    def get_all_moves_possible(self, color):
+
+        all_valid_moves = []
+        for row in self.position:
+            for square in row:
+                valid_piece_positions = []
+                if square.get_piece() != None and square.get_piece().color == color:
+                    valid_piece_positions = self.get_valid_piece_positions(square.row, square.column, True)
+
+                    for piece_position in valid_piece_positions:
+                        move = [square.row, square.column, piece_position[0], piece_position[1]]
+                        all_valid_moves.append(move)
+
+        return all_valid_moves
+
 
 
 

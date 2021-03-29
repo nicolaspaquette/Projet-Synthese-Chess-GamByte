@@ -13,9 +13,6 @@ class ai(player):
 
         # move : [starting_row, starting_column, final_row, final_column]
         valid_positions = self.board.get_valid_piece_positions(move[0], move[1], True)
-
-        print(valid_positions)
-
         valid_positions = self.board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True)
 
         return valid_positions
