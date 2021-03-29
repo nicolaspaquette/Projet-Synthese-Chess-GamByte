@@ -110,7 +110,6 @@ class board:
 
         if piece != None and piece.color == player_color: 
             self.selected_square = square
-            print(piece.as_moved)
             return True
         else:
             return False
@@ -132,13 +131,15 @@ class board:
             moving_piece = self.position[starting_row][starting_column].get_piece()
             self.position[starting_row][starting_column].remove_piece()
 
+        # regular capture
         if self.position[final_row][final_column].get_piece() != None:
             last_move_done.get_second_piece_altered(self.position[final_row][final_column].get_piece(), final_row, final_column, None, None)
+
         self.position[final_row][final_column].add_piece(moving_piece)
 
         self.get_kings_positions()
 
-        #as moved
+        #as moved only when a player makes the move, not during verification
         if not moving_piece.as_moved and not is_verifying:
             moving_piece.as_moved = True
 
@@ -160,21 +161,10 @@ class board:
         if self.selected_square in valid_positions:
             valid_positions.remove(self.selected_square)
 
-        #verify if king is checkmate
-        self.get_kings_positions()
-        if self.color_to_play == "white":
-            king_pos = self.black_king_pos
-        else:
-            king_pos = self.white_king_pos
-
-        in_check = self.is_king_in_check(self.position, king_pos[0], king_pos[1])
-        if in_check:
-            in_checkmate = self.is_king_in_checkmate(king_pos[0], king_pos[1])
-
-        self.list_moves_done.append(last_move_done)
-
         if not is_verifying:
             self.show_board_state()
+
+        self.list_moves_done.append(last_move_done)
             
         return valid_positions
 
@@ -392,13 +382,7 @@ class board:
             self.position[last_move_done.second_piece_move_final_row][last_move_done.second_piece_move_final_column].remove_piece()
             self.position[last_move_done.second_piece_move_starting_row][last_move_done.second_piece_move_starting_column].add_piece(last_move_done.second_piece_altered)
 
-        ##restore not as moved
-        #if last_move_done.piece_move_starting_row == last_move_done.piece_moved.initialized_row and last_move_done.piece_move_starting_column == last_move_done.piece_moved.initialized_row:
-        #    last_move_done.piece_moved.as_moved = False
-#
-        #if last_move_done.second_piece_altered != None:
-        #    if last_move_done.second_piece_move_starting_row == last_move_done.second_piece_altered.initialized_row and last_move_done.second_piece_move_starting_column == last_move_done.second_piece_altered.initialized_row:
-        #        last_move_done.second_piece_altered.as_moved = False
+        self.get_kings_positions()
 
         self.list_moves_done.pop()
 

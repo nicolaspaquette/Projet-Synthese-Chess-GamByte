@@ -42,12 +42,10 @@ class minimax(move_strategy):
 
         all_valid_moves = board.get_all_moves_possible(color)
 
-        move_chosen = random.choice(all_valid_moves)
-
         # white player side: maximizing
         if maximizing_player:
             best_evaluation = -math.inf
-            
+
             for move in all_valid_moves:
                 valid_positions = board.get_valid_piece_positions(move[0], move[1], True)
                 board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True, False)
