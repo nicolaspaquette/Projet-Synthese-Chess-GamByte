@@ -144,6 +144,7 @@ class chess_game():
                                         self.player_turn.starting_row = None
                                         self.player_turn.starting_column = None
                                         self.change_player_turn()
+                                        self.show_game()
 
                     #show possible moves
                     if self.player_turn == self.players[0]:
@@ -173,6 +174,7 @@ class chess_game():
                                             self.player_turn.starting_row = None
                                             self.player_turn.starting_column = None
                                             self.change_player_turn()
+                                            self.show_game()
 
                         #show possible moves
                         if self.player_turn == self.players[1]:
@@ -182,6 +184,7 @@ class chess_game():
                     else:
                         self.player_turn.play_move()
                         self.change_player_turn()
+                        self.show_game()
 
                 #after checkmate, return to main menu
                 #if self.board.is_game_over():

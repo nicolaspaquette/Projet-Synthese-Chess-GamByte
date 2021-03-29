@@ -106,8 +106,7 @@ class board:
         square = self.position[row][column]
         piece = square.get_piece()
 
-        #if piece != None: #and piece.color == self.human_player_color: ###
-        if piece != None and piece.color == player_color: ###
+        if piece != None and piece.color == player_color: 
             self.selected_square = square
             return True
         else:
@@ -120,9 +119,13 @@ class board:
         else:
             return False
 
-    def move_piece(self, starting_row, starting_column, final_row, final_column, valid_positions):
-        moving_piece = self.selected_square.get_piece()
-        self.selected_square.remove_piece()
+    def move_piece(self, starting_row, starting_column, final_row, final_column, valid_positions, in_minimax):
+        if not in_minimax:
+            moving_piece = self.selected_square.get_piece()
+            self.selected_square.remove_piece()
+        else:
+            moving_piece = self.position[starting_row][starting_column].get_piece()
+            self.position[starting_row][starting_column].remove_piece()
         self.position[final_row][final_column].add_piece(moving_piece)
 
         self.get_kings_positions()
@@ -227,6 +230,7 @@ class board:
 
     def get_block_check_positions(self, valid_positions, row, col):
         block_check_positions = []
+        self.get_kings_positions()
 
         for position in valid_positions:
             board_copy = copy.deepcopy(self.position)
@@ -256,7 +260,6 @@ class board:
 
         #verify if king is attacked
         if (king_row, king_column) in all_opponent_moves:
-            print(king.color + " king CHECK")
             return True
         else:
             return False
@@ -275,7 +278,6 @@ class board:
         
         if len(block_positions) == 0 and len(king_positions) == 0:
             king = self.position[king_row][king_column].get_piece()
-            print(king.color + " king CHECKMATE")
             return True
         else:
             return False

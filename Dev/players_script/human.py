@@ -22,5 +22,5 @@ class human(player):
             return False
 
     def play_move(self, row, column):
-        valid_positions = self.board.move_piece(self.starting_row, self.starting_column, row, column, self.valid_positions)
+        valid_positions = self.board.move_piece(self.starting_row, self.starting_column, row, column, self.valid_positions, False)
         return valid_positions
