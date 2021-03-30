@@ -195,7 +195,7 @@ class board:
                 opponent_color = "white"
 
             all_opponent_moves = []
-            all_opponent_moves = self.get_all_valid_positions(self.position, opponent_color)
+            all_opponent_moves = self.get_all_valid_positions(opponent_color)
 
             positions_to_remove = []
             for position in valid_positions:
@@ -208,53 +208,60 @@ class board:
             #remove positions with black piece near the king that are protected from capturing
             positions_to_remove = []
             for position in valid_positions:
-                board_copy = copy.deepcopy(self.position)
-                board_copy[starting_row][starting_column].remove_piece()
-                board_copy[position[0]][position[1]].add_piece(piece)
-                if self.is_king_in_check(board_copy, position[0], position[1]):
+                self.move_piece(starting_row, starting_column, position[0], position[1], valid_positions, True, False)
+                self.get_kings_positions()
+
+                if self.is_king_in_check(position[0], position[1]):
                     positions_to_remove.append(position)
+                
+                self.undo_last_move_done()
+                self.get_kings_positions()
             
             for position in positions_to_remove:
                 valid_positions.remove(position)
 
         return valid_positions
 
-    def get_all_valid_positions(self, board, color):
+    def get_all_valid_positions(self, color):
         all_valid_positions = []
 
         #all squares being attacked
-        for row in board:
+        for row in self.position:
             for square in row:
                 if square.get_piece() != None:
                     if square.get_piece().color == color:
                         if square.get_piece().name != "pawn":
-                            all_valid_positions += square.get_piece().get_valid_positions(board, square.row, square.column)
+                            all_valid_positions += square.get_piece().get_valid_positions(self.position, square.row, square.column)
                         else:
-                            all_valid_positions += square.get_piece().get_capture_positions(board, square.row, square.column)
+                            all_valid_positions += square.get_piece().get_capture_positions(self.position, square.row, square.column)
 
         return all_valid_positions
 
     def get_block_check_positions(self, valid_positions, row, col):
         block_check_positions = []
-        self.get_kings_positions()
 
         for position in valid_positions:
-            board_copy = copy.deepcopy(self.position)
-            piece = board_copy[row][col].get_piece()
-            board_copy[row][col].remove_piece()
-            board_copy[position[0]][position[1]].add_piece(piece)
-            
+            self.move_piece(row, col, position[0], position[1], valid_positions, True, False)
+            self.get_kings_positions()
+            print(self.black_king_pos)
+            print(position)
+            piece = self.position[position[0]][position[1]].get_piece()
+            print(piece)
+
             if piece.color == "white":
-                if not self.is_king_in_check(board_copy, self.white_king_pos[0], self.white_king_pos[1]):
+                if not self.is_king_in_check(self.white_king_pos[0], self.white_king_pos[1]):
                     block_check_positions.append(position)
             else:
-                if not self.is_king_in_check(board_copy, self.black_king_pos[0], self.black_king_pos[1]):
+                if not self.is_king_in_check(self.black_king_pos[0], self.black_king_pos[1]):
                     block_check_positions.append(position)
+
+            self.undo_last_move_done()
+            self.get_kings_positions()
 
         return block_check_positions
 
-    def is_king_in_check(self, board, king_row, king_column):
-        king = board[king_row][king_column].get_piece()
+    def is_king_in_check(self, king_row, king_column):
+        king = self.position[king_row][king_column].get_piece()
         all_opponent_moves = []
 
         if king.color == "white":
@@ -262,7 +269,7 @@ class board:
         else:
             opponent_color = "white"
 
-        all_opponent_moves = self.get_all_valid_positions(board, opponent_color)
+        all_opponent_moves = self.get_all_valid_positions(opponent_color)
 
         #verify if king is attacked
         if (king_row, king_column) in all_opponent_moves:

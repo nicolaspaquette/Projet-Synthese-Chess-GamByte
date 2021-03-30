@@ -399,12 +399,12 @@ class chess_game():
                 checkmate_rect = checkmate.get_rect(center=(525, 25))
                 self.screen.blit(checkmate, checkmate_rect)
 
-            elif self.board.is_king_in_check(self.board.position, self.board.white_king_pos[0], self.board.white_king_pos[1]):
+            elif self.board.is_king_in_check(self.board.white_king_pos[0], self.board.white_king_pos[1]):
                 check = font.render("White King Check", True, self.black)
                 check_rect = check.get_rect(center=(550, 25))
                 self.screen.blit(check, check_rect)
 
-            elif self.board.is_king_in_check(self.board.position, self.board.black_king_pos[0], self.board.black_king_pos[1]):
+            elif self.board.is_king_in_check(self.board.black_king_pos[0], self.board.black_king_pos[1]):
                 check = font.render("Black King Check", True, self.black)
                 check_rect = check.get_rect(center=(550, 25))
                 self.screen.blit(check, check_rect)
