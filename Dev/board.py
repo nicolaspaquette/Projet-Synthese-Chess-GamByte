@@ -25,6 +25,7 @@ class board:
         self.black_king_pos = None
         self.color_to_play = "white"
         self.list_moves_done = []
+        self.bottom_color = None
 
     def initialize_board(self):
         position = []
@@ -178,7 +179,7 @@ class board:
 
         if piece.color == "white":
             opponent_color = "black"
-        else:
+        elif piece.color == "black":
             opponent_color = "white"
 
         valid_positions = piece.get_valid_positions(self.position, starting_row, starting_column)
@@ -242,11 +243,8 @@ class board:
 
         for position in valid_positions:
             self.move_piece(row, col, position[0], position[1], valid_positions, True, False)
-            self.get_kings_positions()
-            print(self.black_king_pos)
-            print(position)
             piece = self.position[position[0]][position[1]].get_piece()
-            print(piece)
+            self.get_kings_positions()
 
             if piece.color == "white":
                 if not self.is_king_in_check(self.white_king_pos[0], self.white_king_pos[1]):
@@ -277,9 +275,15 @@ class board:
         else:
             return False
 
-    def is_king_in_checkmate(self, king_row, king_column): 
-        king = self.position[king_row][king_column].get_piece()
-        king_positions = self.get_valid_piece_positions(king_row, king_column, True)
+    def is_king_in_checkmate(self, color):
+        self.get_kings_positions()
+        if color == "white":
+            king =  self.position[self.white_king_pos[0]][self.white_king_pos[1]].get_piece()
+            king_positions = self.get_valid_piece_positions(self.white_king_pos[0], self.white_king_pos[1], True)
+        else:
+            king =  self.position[self.black_king_pos[0]][self.black_king_pos[1]].get_piece()
+            king_positions = self.get_valid_piece_positions(self.black_king_pos[0], self.black_king_pos[1], True)
+
         valid_positions = []
         block_positions = []
 
@@ -290,14 +294,13 @@ class board:
                     block_positions += self.get_block_check_positions(valid_positions, square.row, square.column)
         
         if len(block_positions) == 0 and len(king_positions) == 0:
-            king = self.position[king_row][king_column].get_piece()
             return True
         else:
             return False
 
     def is_game_over(self):
         if self.white_king_pos != None and self.black_king_pos != None:
-            if self.is_king_in_checkmate(self.white_king_pos[0], self.white_king_pos[1]) or self.is_king_in_checkmate(self.black_king_pos[0], self.black_king_pos[1]):
+            if self.is_king_in_checkmate("white") or self.is_king_in_checkmate("black"):
                 return True
             else:
                 return False
@@ -343,25 +346,29 @@ class board:
     def castling_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, move_done, is_verifying):
         if moving_piece.name == "king" and starting_row == final_row:
             if starting_column - final_column == 2: # left side castling
-                if moving_piece.color == "white":
-                    rook_col = 3 
-                else:
+                if self.bottom_color == "white": 
+                    rook_col = 3
+                else: 
                     rook_col = 2
+
                 rook = self.position[final_row][0].get_piece()
                 if not is_verifying:
                     rook.as_moved = True
+
                 move_done.get_second_piece_altered(self.position[final_row][0].get_piece(), final_row, 0, final_row, rook_col)
                 self.position[final_row][0].remove_piece()
                 self.position[final_row][rook_col].add_piece(rook)
 
             elif starting_column - final_column == -2: #right right castling
-                if moving_piece.color == "white":
-                    rook_col = 5 
-                else:
-                    rook_col = 4
+                if self.bottom_color == "white": 
+                    rook_col = 5  
+                else: 
+                    rook_col = 4 
+
                 rook = self.position[final_row][7].get_piece()
                 if not is_verifying:
                     rook.as_moved = True
+
                 move_done.get_second_piece_altered(self.position[final_row][7].get_piece(), final_row, 7, final_row, rook_col)
                 self.position[final_row][7].remove_piece()
                 self.position[final_row][rook_col].add_piece(rook)

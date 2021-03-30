@@ -359,6 +359,7 @@ class chess_game():
             opponent_color = "white"
 
         if self.game_mode == "Human":
+            self.board.bottom_color = self.selected_color
             self.players.append(human(self.selected_color, self.board))
             self.players.append(human(opponent_color, self.board))
         else:
@@ -389,12 +390,12 @@ class chess_game():
     def show_checks_and_checkmates(self):
         if self.board.white_king_pos != None and self.board.black_king_pos != None:
             font = pygame.font.SysFont("Arial", 30)
-            if self.board.is_king_in_checkmate(self.board.white_king_pos[0], self.board.white_king_pos[1]):
+            if self.board.is_king_in_checkmate("white"):
                 checkmate = font.render("White King Checkmate", True, self.black)
                 checkmate_rect = checkmate.get_rect(center=(525, 25))
                 self.screen.blit(checkmate, checkmate_rect)
 
-            elif self.board.is_king_in_checkmate(self.board.black_king_pos[0], self.board.black_king_pos[1]):
+            elif self.board.is_king_in_checkmate("black"):
                 checkmate = font.render("Black King Checkmate", True, self.black)
                 checkmate_rect = checkmate.get_rect(center=(525, 25))
                 self.screen.blit(checkmate, checkmate_rect)
