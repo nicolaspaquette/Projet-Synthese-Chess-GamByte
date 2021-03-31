@@ -121,44 +121,11 @@ class chess_game():
                     self.start_game()
 
                 self.show_game()
-                #self.window.blit(self.screen, (0,0))
-                #pygame.display.update()
                 
                 ##################################################### GAME LOOP ###################################################
-                
-                # human player turn
-                if self.player_turn == self.players[0]:
-
-                    if self.mouse != None:
-                        square_size = self.board.position[0][0].size
-                        if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
-                            if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
-
-                                #row and column selection
-                                row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
-                                column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
-
-                                #piece is selected
-                                self.player_turn.choose_move(row, column)
-
-                                #piece destination is selected
-                                if self.player_turn.starting_row != None and self.player_turn.starting_column != None and (row != self.player_turn.starting_row or column != self.player_turn.starting_column):
-                                    if self.player_turn.verify_move(row, column):
-                                        self.player_turn.valid_positions = self.player_turn.play_move(row, column)
-                                        self.player_turn.starting_row = None
-                                        self.player_turn.starting_column = None
-                                        self.change_player_turn()
-                                        self.show_game()
-
-                    #show possible moves
+                if not self.board.game_over:
+                    # human player turn
                     if self.player_turn == self.players[0]:
-                        if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
-                            self.show_valid_positions(self.player_turn.valid_positions)
-
-                # opponent player turn    
-                else:
-                    # human opponent
-                    if self.game_mode == "Human":
                         if self.mouse != None:
                             square_size = self.board.position[0][0].size
                             if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
@@ -181,15 +148,43 @@ class chess_game():
                                             self.show_game()
 
                         #show possible moves
-                        if self.player_turn == self.players[1]:
+                        if self.player_turn == self.players[0]:
                             if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
                                 self.show_valid_positions(self.player_turn.valid_positions)
-
-                    # ai opponent
                     else:
-                        if wait_time > 0:
-                            self.player_turn.play_move()
-                            self.change_player_turn()
+                        # human opponent
+                        if self.game_mode == "Human":
+                            if self.mouse != None:
+                                square_size = self.board.position[0][0].size
+                                if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
+                                    if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
+
+                                        #row and column selection
+                                        row = math.floor((self.mouse[1]-self.starting_pos_top)/square_size)
+                                        column = math.floor((self.mouse[0]-self.starting_pos_left)/square_size)
+
+                                        #piece is selected
+                                        self.player_turn.choose_move(row, column)
+
+                                        #piece destination is selected
+                                        if self.player_turn.starting_row != None and self.player_turn.starting_column != None and (row != self.player_turn.starting_row or column != self.player_turn.starting_column):
+                                            if self.player_turn.verify_move(row, column):
+                                                self.player_turn.valid_positions = self.player_turn.play_move(row, column)
+                                                self.player_turn.starting_row = None
+                                                self.player_turn.starting_column = None
+                                                self.change_player_turn()
+                                                self.show_game()
+
+                            #show possible moves
+                            if self.player_turn == self.players[1]:
+                                if self.player_turn.starting_row != None and self.player_turn.starting_column != None:
+                                    self.show_valid_positions(self.player_turn.valid_positions)
+
+                        # ai opponent
+                        else:
+                            if wait_time > 0:
+                                self.player_turn.play_move()
+                                self.change_player_turn()
 
                     wait_time += 1
 
@@ -354,9 +349,11 @@ class chess_game():
 
     def initialize_players(self):
         if self.selected_color == "white":
+            self.board.bottom_color = "white"
             opponent_color = "black"
         else:
             opponent_color = "white"
+            self.board.bottom_color = "black"
 
         if self.game_mode == "Human":
             self.board.bottom_color = self.selected_color
@@ -394,11 +391,13 @@ class chess_game():
                 checkmate = font.render("White King Checkmate", True, self.black)
                 checkmate_rect = checkmate.get_rect(center=(525, 25))
                 self.screen.blit(checkmate, checkmate_rect)
+                self.board.game_over = True
 
             elif self.board.is_king_in_checkmate("black"):
                 checkmate = font.render("Black King Checkmate", True, self.black)
                 checkmate_rect = checkmate.get_rect(center=(525, 25))
                 self.screen.blit(checkmate, checkmate_rect)
+                self.board.game_over = True
 
             elif self.board.is_king_in_check(self.board.white_king_pos[0], self.board.white_king_pos[1]):
                 check = font.render("White King Check", True, self.black)

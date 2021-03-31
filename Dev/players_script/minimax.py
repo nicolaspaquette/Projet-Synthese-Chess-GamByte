@@ -35,21 +35,13 @@ class minimax(move_strategy):
         if depth == 0 or board.is_game_over():
             return self.evaluate_position(board), None
 
-        if maximizing_player:
-            color = "white"
-        else:
-            color = "black"
-
-        all_valid_moves = board.get_all_moves_possible(color)
-
         # white player side: maximizing
         if maximizing_player:
             best_evaluation = -math.inf
+            all_valid_moves = board.get_all_moves_possible("white")
 
             for move in all_valid_moves:
-                valid_positions = board.get_valid_piece_positions(move[0], move[1], True)
-                board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True, False)
-                
+                board.move_piece(move[0], move[1], move[2], move[3], [], True, False)
                 evaluation = self.minimax_search(board, depth - 1, alpha, beta, False)[0]
                 board.undo_last_move_done()
 
@@ -66,11 +58,10 @@ class minimax(move_strategy):
         # black player side: minimizing
         else:
             worse_evaluation = math.inf
+            all_valid_moves = board.get_all_moves_possible("black")
             
             for move in all_valid_moves:
-                valid_positions = board.get_valid_piece_positions(move[0], move[1], True)
-                board.move_piece(move[0], move[1], move[2], move[3], valid_positions, True, False)
-
+                board.move_piece(move[0], move[1], move[2], move[3], [], True, False)
                 evaluation = self.minimax_search(board, depth - 1, alpha, beta, True)[0]
                 board.undo_last_move_done()
 

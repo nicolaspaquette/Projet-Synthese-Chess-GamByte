@@ -26,6 +26,7 @@ class board:
         self.color_to_play = "white"
         self.list_moves_done = []
         self.bottom_color = None
+        self.game_over = False
 
     def initialize_board(self):
         position = []
@@ -131,14 +132,19 @@ class board:
         else:
             moving_piece = self.position[starting_row][starting_column].get_piece()
             self.position[starting_row][starting_column].remove_piece()
-
+        
         # regular capture
         if self.position[final_row][final_column].get_piece() != None:
             last_move_done.get_second_piece_altered(self.position[final_row][final_column].get_piece(), final_row, final_column, None, None)
 
         self.position[final_row][final_column].add_piece(moving_piece)
 
-        self.get_kings_positions()
+        if is_verifying:
+            print("piece", moving_piece)
+            print(starting_row, starting_column, final_row, final_column)
+            print("move piece moved", last_move_done.piece_moved)
+            print("second piece moved", last_move_done.second_piece_altered)
+            self.show_board_state()
 
         #as moved only when a player makes the move, not during verification
         if not moving_piece.as_moved and not is_verifying:
@@ -152,20 +158,17 @@ class board:
             self.position[final_row][final_column].remove_piece()
             self.position[final_row][final_column].add_piece(queen(moving_piece.color))
 
+        self.list_moves_done.append(last_move_done)
+
         #verify en passant
-        last_move_done = self.en_passant_verification(moving_piece, starting_row, starting_column, final_row, final_column, last_move_done, is_verifying)
+        self.en_passant_verification(moving_piece, starting_row, starting_column, final_row, final_column, last_move_done, is_verifying)
 
         #verify castling
-        last_move_done = self.castling_verification(moving_piece, starting_row, starting_column, final_row, final_column, last_move_done, is_verifying)
+        self.castling_verification(moving_piece, starting_row, starting_column, final_row, final_column, last_move_done, is_verifying)
 
         #do not show own square as potential move for the next move
         if self.selected_square in valid_positions:
             valid_positions.remove(self.selected_square)
-
-        if not is_verifying:
-            self.show_board_state()
-
-        self.list_moves_done.append(last_move_done)
             
         return valid_positions
 
@@ -209,7 +212,7 @@ class board:
             #remove positions with black piece near the king that are protected from capturing
             positions_to_remove = []
             for position in valid_positions:
-                self.move_piece(starting_row, starting_column, position[0], position[1], valid_positions, True, False)
+                self.move_piece(starting_row, starting_column, position[0], position[1], [], True, False)
                 self.get_kings_positions()
 
                 if self.is_king_in_check(position[0], position[1]):
@@ -231,10 +234,7 @@ class board:
             for square in row:
                 if square.get_piece() != None:
                     if square.get_piece().color == color:
-                        if square.get_piece().name != "pawn":
                             all_valid_positions += square.get_piece().get_valid_positions(self.position, square.row, square.column)
-                        else:
-                            all_valid_positions += square.get_piece().get_capture_positions(self.position, square.row, square.column)
 
         return all_valid_positions
 
@@ -243,6 +243,7 @@ class board:
 
         for position in valid_positions:
             self.move_piece(row, col, position[0], position[1], valid_positions, True, False)
+
             piece = self.position[position[0]][position[1]].get_piece()
             self.get_kings_positions()
 
@@ -254,7 +255,6 @@ class board:
                     block_check_positions.append(position)
 
             self.undo_last_move_done()
-            self.get_kings_positions()
 
         return block_check_positions
 
@@ -290,10 +290,9 @@ class board:
         for row in self.position:
             for square in row:
                 if square.get_piece() != None and square.get_piece().color == king.color and square.get_piece().name != "king":
-                    valid_positions = self.get_valid_piece_positions(square.row, square.column, True)
-                    block_positions += self.get_block_check_positions(valid_positions, square.row, square.column)
+                    valid_positions += self.get_valid_piece_positions(square.row, square.column, True)
         
-        if len(block_positions) == 0 and len(king_positions) == 0:
+        if len(king_positions) == 0 and len(valid_positions) == 0:
             return True
         else:
             return False
@@ -348,7 +347,7 @@ class board:
             if starting_column - final_column == 2: # left side castling
                 if self.bottom_color == "white": 
                     rook_col = 3
-                else: 
+                elif self.bottom_color == "black": 
                     rook_col = 2
 
                 rook = self.position[final_row][0].get_piece()
@@ -362,7 +361,7 @@ class board:
             elif starting_column - final_column == -2: #right right castling
                 if self.bottom_color == "white": 
                     rook_col = 5  
-                else: 
+                elif self.bottom_color == "black": 
                     rook_col = 4 
 
                 rook = self.position[final_row][7].get_piece()
@@ -396,12 +395,14 @@ class board:
             self.position[last_move_done.second_piece_move_final_row][last_move_done.second_piece_move_final_column].remove_piece()
             self.position[last_move_done.second_piece_move_starting_row][last_move_done.second_piece_move_starting_column].add_piece(last_move_done.second_piece_altered)
 
-        self.get_kings_positions()
+            if last_move_done.piece_moved.color == "white":
+                self.white_king_pos = (last_move_done.piece_move_starting_row, last_move_done.piece_move_starting_column)
+            else:
+                self.black_king_pos = (last_move_done.piece_move_starting_row, last_move_done.piece_move_starting_column)
 
-        self.list_moves_done.pop()
+        self.list_moves_done.remove(last_move_done)
 
     def get_all_moves_possible(self, color):
-
         all_valid_moves = []
         for row in self.position:
             for square in row:
@@ -410,8 +411,9 @@ class board:
                     valid_piece_positions = self.get_valid_piece_positions(square.row, square.column, True)
 
                     for piece_position in valid_piece_positions:
-                        move = [square.row, square.column, piece_position[0], piece_position[1]]
-                        all_valid_moves.append(move)
+                        if self.position[piece_position[0]][piece_position[1]].get_piece() == None or self.position[piece_position[0]][piece_position[1]].get_piece().name != "king":
+                            move = [square.row, square.column, piece_position[0], piece_position[1]]
+                            all_valid_moves.append(move)
 
         return all_valid_moves
 
