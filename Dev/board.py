@@ -226,7 +226,10 @@ class board:
             for square in row:
                 if square.get_piece() != None:
                     if square.get_piece().color == color:
+                        if square.get_piece().name != "pawn":
                             all_valid_positions += square.get_piece().get_valid_positions(self.position, square.row, square.column)
+                        else:
+                            all_valid_positions += square.get_piece().get_capture_positions(self.position, square.row, square.column)
 
         return all_valid_positions
 
