@@ -115,7 +115,6 @@ class chess_game():
                     self.initialize_players()
                     self.are_players_initialized = True
 
-
                 if not self.game_started:
                     self.game_started = True
                     self.start_game()

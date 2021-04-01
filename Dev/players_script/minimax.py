@@ -53,6 +53,8 @@ class minimax(move_strategy):
                 if beta <= alpha:
                     break
 
+            #print("white player move done")
+
             return best_evaluation, move_chosen
 
         # black player side: minimizing
@@ -72,6 +74,8 @@ class minimax(move_strategy):
                 beta = min(beta, evaluation)
                 if beta <= alpha:
                     break
+
+            #print("black player move done")
 
             return worse_evaluation, move_chosen
 
