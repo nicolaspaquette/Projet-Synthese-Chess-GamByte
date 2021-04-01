@@ -386,17 +386,31 @@ class chess_game():
     def show_checks_and_checkmates(self):
         if self.board.white_king_pos != None and self.board.black_king_pos != None:
             font = pygame.font.SysFont("Arial", 30)
-            if self.board.is_king_in_checkmate("white"):
-                checkmate = font.render("White King Checkmate", True, self.black)
-                checkmate_rect = checkmate.get_rect(center=(525, 25))
-                self.screen.blit(checkmate, checkmate_rect)
+            if self.board.is_king_in_checkmate("white") != False:
                 self.board.game_over = True
+                if self.board.is_king_in_checkmate("white") == "Checkmate":
+                    checkmate = font.render("White King Checkmate", True, self.black)
+                    checkmate_rect = checkmate.get_rect(center=(525, 25))
+                    self.screen.blit(checkmate, checkmate_rect)
+                    self.board.game_over_result = "Checkmate"
+                else:
+                    stalemate = font.render("White King Stalemate", True, self.black)
+                    stalemate_rect = stalemate.get_rect(center=(525, 25))
+                    self.screen.blit(stalemate, stalemate_rect)
+                    self.board.game_over_result = "Stalemate"
 
-            elif self.board.is_king_in_checkmate("black"):
-                checkmate = font.render("Black King Checkmate", True, self.black)
-                checkmate_rect = checkmate.get_rect(center=(525, 25))
-                self.screen.blit(checkmate, checkmate_rect)
+            elif self.board.is_king_in_checkmate("black") != False:
                 self.board.game_over = True
+                if self.board.is_king_in_checkmate("black") == "Checkmate":
+                    checkmate = font.render("Black King Checkmate", True, self.black)
+                    checkmate_rect = checkmate.get_rect(center=(525, 25))
+                    self.screen.blit(checkmate, checkmate_rect)
+                    self.board.game_over_result = "Checkmate"
+                else:
+                    stalemate = font.render("Black King Stalemate", True, self.black)
+                    stalemate_rect = stalemate.get_rect(center=(525, 25))
+                    self.screen.blit(stalemate, stalemate_rect)
+                    self.board.game_over_result = "Stalemate"
 
             elif self.board.is_king_in_check(self.board.white_king_pos[0], self.board.white_king_pos[1]):
                 check = font.render("White King Check", True, self.black)

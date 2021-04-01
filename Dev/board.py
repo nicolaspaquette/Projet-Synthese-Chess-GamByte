@@ -27,6 +27,7 @@ class board:
         self.list_moves_done = []
         self.bottom_color = None
         self.game_over = False
+        self.game_over_result = None
 
     def initialize_board(self):
         position = []
@@ -301,15 +302,22 @@ class board:
             for square in row:
                 if square.get_piece() != None and square.get_piece().color == king.color and square.get_piece().name != "king":
                     valid_positions += self.get_valid_piece_positions(square.row, square.column, True)
-        
-        if len(king_positions) == 0 and len(valid_positions) == 0:
-            return True
+
+        if color == "white":       
+            check = self.is_king_in_check(self.white_king_pos[0], self.white_king_pos[1])
+        else:
+            check = self.is_king_in_check(self.black_king_pos[0], self.black_king_pos[1])
+
+        if len(king_positions) == 0 and len(valid_positions) == 0 and check:
+            return "Checkmate"
+        elif len(king_positions) == 0 and len(valid_positions) == 0 and not check:
+            return "Stalemate"
         else:
             return False
 
     def is_game_over(self):
         if self.white_king_pos != None and self.black_king_pos != None:
-            if self.is_king_in_checkmate("white") or self.is_king_in_checkmate("black"):
+            if self.is_king_in_checkmate("white") != False or self.is_king_in_checkmate("black") != False:
                 return True
             else:
                 return False
