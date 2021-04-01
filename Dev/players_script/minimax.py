@@ -41,7 +41,7 @@ class minimax(move_strategy):
             all_valid_moves = board.get_all_moves_possible("white")
 
             for move in all_valid_moves:
-                board.move_piece(move[0], move[1], move[2], move[3], [], True, False)
+                board.move_piece(move[1], move[2], move[3], move[4], [], True, False)
                 evaluation = self.minimax_search(board, depth - 1, alpha, beta, False)[0]
                 board.undo_last_move_done()
 
@@ -53,17 +53,16 @@ class minimax(move_strategy):
                 if beta <= alpha:
                     break
 
-            #print("white player move done")
-
             return best_evaluation, move_chosen
 
         # black player side: minimizing
         else:
             worse_evaluation = math.inf
             all_valid_moves = board.get_all_moves_possible("black")
+            #print("ALL THE MOVES", all_valid_moves, "\n")
             
             for move in all_valid_moves:
-                board.move_piece(move[0], move[1], move[2], move[3], [], True, False)
+                board.move_piece(move[1], move[2], move[3], move[4], [], True, False)
                 evaluation = self.minimax_search(board, depth - 1, alpha, beta, True)[0]
                 board.undo_last_move_done()
 
@@ -74,8 +73,6 @@ class minimax(move_strategy):
                 beta = min(beta, evaluation)
                 if beta <= alpha:
                     break
-
-            #print("black player move done")
 
             return worse_evaluation, move_chosen
 
