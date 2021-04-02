@@ -218,6 +218,16 @@ class board:
                 self.undo_last_move_done()
                 self.get_kings_positions()
             
+            #cannot castle if king in check or if king is going to be in check between the move
+            if self.is_king_in_check(starting_row, starting_column) and (starting_row, starting_column + 2) in valid_positions and (starting_row, starting_column + 2) not in positions_to_remove:
+                positions_to_remove.append((starting_row, starting_column + 2))
+            if self.is_king_in_check(starting_row, starting_column) and (starting_row, starting_column - 2) in valid_positions and (starting_row, starting_column - 2) not in positions_to_remove:
+                positions_to_remove.append((starting_row, starting_column - 2))
+            if (starting_row, starting_column + 1) not in valid_positions and (starting_row, starting_column + 2) in valid_positions and (starting_row, starting_column + 2) not in positions_to_remove:
+                positions_to_remove.append((starting_row, starting_column + 2))
+            if (starting_row, starting_column - 1) not in valid_positions and (starting_row, starting_column - 2) in valid_positions and (starting_row, starting_column - 2) not in positions_to_remove:
+                positions_to_remove.append((starting_row, starting_column - 2))
+
             for position in positions_to_remove:
                 valid_positions.remove(position)
 

@@ -10,6 +10,8 @@ class ai(player):
 
     def play_move(self):
         score, move = self.move_strategy.select_move()
+        print("board score", score/100)
+        print("move", move)
         valid_positions = self.board.move_piece(move[1], move[2], move[3], move[4], [], False, True)
 
         return valid_positions
