@@ -21,7 +21,6 @@ class board:
         self.initialize_starting_positions()
         self.selected_square = None
         self.en_passant_piece = None
-        self.move_list = {}
         self.white_king_pos = None
         self.black_king_pos = None
         self.color_to_play = "white"
@@ -31,6 +30,12 @@ class board:
         self.game_over_result = None
         self.piece_square_table = piece_square_table
         self.is_endgame = False
+
+        self.move_list = []
+        self.white_bottom_column_values = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
+        self.white_bottom_row_values = {0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
+        self.black_bottom_column_values = {0: "H", 1: "G", 2: "F", 3: "E", 4: "D", 5: "C", 6: "B", 7: "A"}
+        self.black_bottom_row_values = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
 
     def initialize_board(self):
         position = []
@@ -130,6 +135,12 @@ class board:
     def move_piece(self, starting_row, starting_column, final_row, final_column, valid_positions, is_verifying, ai_play_move):
         last_move_done = move_done(self.position[starting_row][starting_column].get_piece(), starting_row, starting_column, final_row, final_column)
 
+        # to register in the move_list
+        is_capturing = False
+        is_castling = False
+        is_checking = False
+        is_checkmating = False
+
         # real player move
         if not is_verifying and not ai_play_move:
             moving_piece = self.selected_square.get_piece()
@@ -141,6 +152,7 @@ class board:
         # regular capture
         if self.position[final_row][final_column].get_piece() != None:
             last_move_done.get_second_piece_altered(self.position[final_row][final_column].get_piece(), final_row, final_column, None, None)
+            is_capturing = True
 
         self.position[final_row][final_column].add_piece(moving_piece)
 
@@ -160,7 +172,28 @@ class board:
 
         #verify castling
         self.castling_verification(moving_piece, starting_row, starting_column, final_row, final_column, last_move_done, is_verifying)
-            
+
+        # register move in move_list if a real move is played
+        if not is_verifying:
+            if moving_piece.name == "king" and starting_row == final_row and (starting_column + 2 == final_column or starting_column - 2 == final_column):
+                is_castling = True
+
+            if moving_piece.color == "white":
+                is_checking = self.is_king_in_check(self.black_king_pos[0], self.black_king_pos[1])
+            else:
+                is_checking = self.is_king_in_check(self.white_king_pos[0], self.white_king_pos[1])
+
+            if moving_piece.color == "white":
+                opponent_color = "black"
+            else:
+                opponent_color = "white"
+            checkmate = self.is_king_in_checkmate(opponent_color)
+
+            if checkmate == "Checkmate":
+                is_checkmating = True
+
+            self.register_move(moving_piece.sign, final_row, final_column, is_capturing, is_castling, is_checking, is_checkmating)
+
         return valid_positions
 
     def get_valid_piece_positions(self, starting_row, starting_column, is_verifying):
@@ -544,6 +577,36 @@ class board:
             board_score =   human_score - ai_score
 
         return board_score
+
+    def register_move(self, piece_sign, final_row, final_column, is_capturing, is_castling, is_checking, is_checkmating):
+        if self.human_player_color == "white":
+            if is_capturing:
+                move_name = piece_sign + "x" + self.white_bottom_column_values[final_column] + self.white_bottom_row_values[final_row]
+            elif is_castling:
+                move_name = "O-O"
+            else:
+                move_name = piece_sign + self.white_bottom_column_values[final_column] + self.white_bottom_row_values[final_row]
+
+            if is_checkmating:
+                move_name += "#"
+            elif is_checking:
+                move_name += "+"
+        else:
+            if is_capturing:
+                move_name = piece_sign + "x" + self.black_bottom_column_values[final_column] + self.black_bottom_row_values[final_row]
+            elif is_castling:
+                move_name = "O-O"
+            else:
+                move_name = piece_sign + self.black_bottom_column_values[final_column] + self.black_bottom_row_values[final_row]
+
+            if is_checkmating:
+                move_name += "#"
+            elif is_checking:
+                move_name += "+"
+
+        self.move_list.append(move_name)
+        print(self.move_list)
+
 
 
 
