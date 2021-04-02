@@ -436,7 +436,7 @@ class board:
                     valid_piece_positions = self.get_valid_piece_positions(square.row, square.column, True)
 
                     for piece_position in valid_piece_positions:
-                        if self.position[piece_position[0]][piece_position[1]].get_piece() != "king":
+                        if self.position[piece_position[0]][piece_position[1]].get_piece() != "king": # cannot land on a king
 
                             #pawn promotion is usually very good
                             if piece.name == "pawn" and piece.initialized_row == 6 and piece_position[0] == 0:
@@ -448,17 +448,17 @@ class board:
                             if piece.name == "pawn" and piece.initialized_row == 6:
                                 if square.row > 0 and square.column > 0:
                                     if self.position[square.row - 1][square.column - 1].get_piece() != None and self.position[square.row - 1][square.column - 1].get_piece().color != piece.color and self.position[square.row - 1][square.column - 1].get_piece().value > piece.value:
-                                        move_score += self.position[square.row - 1][square.column - 1].get_piece().value
+                                        move_score += 10 * (self.position[square.row - 1][square.column - 1].get_piece().value - piece.value)
                                 if square.row > 0 and square.column < 7:
                                     if self.position[square.row - 1][square.column + 1].get_piece() != None and self.position[square.row - 1][square.column + 1].get_piece().color != piece.color and self.position[square.row - 1][square.column + 1].get_piece().value > piece.value:
-                                        move_score += self.position[square.row - 1][square.column + 1].get_piece().value
+                                        move_score += 10 * (self.position[square.row - 1][square.column + 1].get_piece().value - piece.value)
                             elif piece.name == "pawn" and piece.initialized_row == 1:
                                 if square.row < 7 and square.column > 0:
                                     if self.position[square.row + 1][square.column - 1].get_piece() != None and self.position[square.row + 1][square.column - 1].get_piece().color != piece.color and self.position[square.row + 1][square.column - 1].get_piece().value > piece.value:
-                                        move_score += self.position[square.row + 1][square.column - 1].get_piece().value
+                                        move_score += 10 * (self.position[square.row + 1][square.column - 1].get_piece().value - piece.value)
                                 if square.row < 7 and square.column < 7:
                                     if self.position[square.row + 1][square.column + 1].get_piece() != None and self.position[square.row + 1][square.column + 1].get_piece().color != piece.color and self.position[square.row + 1][square.column + 1].get_piece().value > piece.value:
-                                        move_score += self.position[square.row + 1][square.column + 1].get_piece().value
+                                        move_score += 10 * (self.position[square.row + 1][square.column + 1].get_piece().value - piece.value)
 
                             #capturing pieces that value more are usually good moves
                             if piece.name != "pawn":
@@ -469,17 +469,17 @@ class board:
                             if piece.initialized_row == 7:
                                 if square.row > 0 and square.column > 0:
                                     if self.position[square.row - 1][square.column - 1].get_piece() != None and self.position[square.row - 1][square.column - 1].get_piece().color != piece.color and self.position[square.row - 1][square.column - 1].get_piece().name == "pawn":
-                                        move_score += (self.position[square.row - 1][square.column - 1].get_piece().value - piece.value)
+                                        move_score -= piece.value
                                 if square.row > 0 and square.column < 7:
                                     if self.position[square.row - 1][square.column + 1].get_piece() != None and self.position[square.row - 1][square.column + 1].get_piece().color != piece.color and self.position[square.row - 1][square.column + 1].get_piece().name == "pawn":
-                                        move_score += (self.position[square.row - 1][square.column + 1].get_piece().value - piece.value)
+                                        move_score -= piece.value
                             elif piece.initialized_row == 0:
                                 if square.row < 7 and square.column > 0:
                                     if self.position[square.row + 1][square.column - 1].get_piece() != None and self.position[square.row + 1][square.column - 1].get_piece().color != piece.color and self.position[square.row + 1][square.column - 1].get_piece().name == "pawn":
-                                        move_score += (self.position[square.row + 1][square.column - 1].get_piece().value - piece.value)
+                                        move_score -= piece.value
                                 if square.row < 7 and square.column < 7:
                                     if self.position[square.row + 1][square.column + 1].get_piece() != None and self.position[square.row + 1][square.column + 1].get_piece().color != piece.color and self.position[square.row + 1][square.column + 1].get_piece().name == "pawn":
-                                        move_score += (self.position[square.row + 1][square.column + 1].get_piece().value - piece.value)
+                                        move_score -= piece.value
 
                             move = [move_score, square.row, square.column, piece_position[0], piece_position[1]]
                             all_valid_moves.append(move)

@@ -9,7 +9,7 @@ class minimax(move_strategy):
         self.board = board
         self.color = ai_color
         self.number_of_searches = 0
-        self.depth = 4
+        self.depth = 3
 
     def select_move(self):
         depth = self.depth
