@@ -9,7 +9,7 @@ class minimax(move_strategy):
         self.board = board
         self.color = ai_color
         self.number_of_searches = 0
-        self.depth = 3
+        self.depth = 4
 
     def select_move(self):
         depth = self.depth
@@ -33,7 +33,7 @@ class minimax(move_strategy):
         self.number_of_searches += 1
 
         if depth == 0 or board.is_game_over():
-            return self.evaluate_position(board), None
+            return board.evaluate_position(self.color), None
 
         # white player side: maximizing
         if maximizing_player:
@@ -75,24 +75,3 @@ class minimax(move_strategy):
                     break
 
             return worse_evaluation, move_chosen
-
-    def evaluate_position(self, board):
-        # for white, maximizing the score
-        # for black, minimizing the score
-
-        ai_score = 0
-        opponent_score = 0
-        for row in board.position:
-            for square in row:
-                if square.get_piece() != None and square.get_piece().color == self.color:
-                    ai_score += square.get_piece().value
-                elif  square.get_piece() != None and square.get_piece().color != self.color:
-                    opponent_score += square.get_piece().value
-
-        # board_score = white_score - black_score
-        if self.color == "white":
-            board_score = ai_score - opponent_score
-        else:
-            board_score = opponent_score - ai_score
-
-        return board_score

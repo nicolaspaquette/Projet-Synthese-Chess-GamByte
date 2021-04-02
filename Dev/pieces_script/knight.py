@@ -9,7 +9,7 @@ class knight(piece):
         self.initialized_row = None
         self.initialized_column = None
         self.can_be_captured_en_passant = False
-        self.value = 30
+        self.value = 320
 
     def get_valid_positions(self, board_positions, row, column):
         valid_positions = []

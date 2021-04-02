@@ -1,5 +1,6 @@
 from square import square
 from move_done import move_done
+from piece_square_tables import piece_square_table
 
 import sys
 from pathlib import Path
@@ -28,6 +29,8 @@ class board:
         self.bottom_color = None
         self.game_over = False
         self.game_over_result = None
+        self.piece_square_table = piece_square_table
+        self.is_endgame = False
 
     def initialize_board(self):
         position = []
@@ -161,6 +164,7 @@ class board:
         return valid_positions
 
     def get_valid_piece_positions(self, starting_row, starting_column, is_verifying):
+        self.get_kings_positions()
         possible_squares = []
         valid_positions = []
         if not is_verifying:
@@ -436,9 +440,9 @@ class board:
 
                             #pawn promotion is usually very good
                             if piece.name == "pawn" and piece.initialized_row == 6 and piece_position[0] == 0:
-                                move_score += 90
+                                move_score += 900
                             elif piece.name == "pawn" and piece.initialized_row == 1 and piece_position[0] == 7:
-                                move_score += 90
+                                move_score += 900
 
                             #capturing a more valuable piece with a pawn is usually good
                             if piece.name == "pawn" and piece.initialized_row == 6:
@@ -482,20 +486,54 @@ class board:
 
         return sorted(all_valid_moves, reverse=True)
 
-    def show_board_state(self):
-        board = []
-        for row in self.position:
-            pos = []
-            for square in row:
-                if square.get_piece() != None:
-                    pos.append(square.get_piece().color[0] + "_" + square.get_piece().sign)
-                else:
-                    pos.append("   ")
-            board.append(pos)
+    def evaluate_position(self, ai_color):
+        # for white, maximizing the score
+        # for black, minimizing the score
+        # for piece_square_tables: human player always on the bottom
 
-        print("---------------------------------------------------------------------------------------")
-        for pos in board:
-            print(pos)
+        # for the king, endgame begins when players have maximum two majors pieces (knight, bishop, rook, queen) and some pawns
+        if not self.is_endgame:
+            white_major_pieces = 0
+            black_major_pieces = 0
+            for row in self.position:
+                for square in row:
+                    piece = square.get_piece()
+                    if piece != None:
+                        if piece.color == "white" and (piece.name == "knight" or piece.name == "bishop" or piece.name == "rook" or piece.name == "queen"):
+                            white_major_pieces += 1
+                        elif piece.color == "black" and (piece.name == "knight" or piece.name == "bishop" or piece.name == "rook" or piece.name == "queen"):
+                            black_major_pieces += 1
+            if white_major_pieces <= 2 and black_major_pieces <= 2:
+                self.is_endgame = True
+
+        ai_score = 0
+        human_score = 0
+        for row in self.position:
+            for square in row:
+                if square.get_piece() != None and square.get_piece().color == ai_color:
+                    if square.get_piece().name != "king":
+                        ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_table"][square.row][square.column]
+                    else:
+                        if self.is_endgame:
+                            ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_end_game_table"][square.row][square.column]
+                        else:
+                            ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
+                elif  square.get_piece() != None and square.get_piece().color != ai_color:
+                    if square.get_piece().name != "king":
+                        human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_table"][square.row][square.column]
+                    else:
+                        if self.is_endgame:
+                            human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_end_game_table"][square.row][square.column]
+                        else:
+                            human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
+
+        # board_score = white_score - black_score
+        if ai_color == "white":
+            board_score = ai_score - human_score
+        else:
+            board_score =   human_score - ai_score
+
+        return board_score
 
 
 
