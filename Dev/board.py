@@ -23,15 +23,18 @@ class board:
         self.en_passant_piece = None
         self.white_king_pos = None
         self.black_king_pos = None
-        self.color_to_play = "white"
         self.list_moves_done = []
         self.bottom_color = None
-        self.game_over = False
-        self.game_over_result = None
         self.piece_square_table = piece_square_table
         self.is_endgame = False
+        self.color_to_play = "white"
 
-        self.move_list = []
+        self.game_over = False
+        self.winner = None
+        self.game_over_result = None
+        self.game_information = {}
+        self.move = []
+        self.number_of_moves = 0
         self.white_bottom_column_values = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
         self.white_bottom_row_values = {0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
         self.black_bottom_column_values = {0: "H", 1: "G", 2: "F", 3: "E", 4: "D", 5: "C", 6: "B", 7: "A"}
@@ -604,8 +607,19 @@ class board:
             elif is_checking:
                 move_name += "+"
 
-        self.move_list.append(move_name)
-        print(self.move_list)
+        self.number_of_moves += 1
+        board_information = []
+        for row in self.position:
+            for square in row:
+                piece_information = []
+                if square.get_piece() != None:
+                    piece_information.append(square.get_piece().color)
+                    piece_information.append(square.get_piece().name)
+                    piece_information.append(square.row)
+                    piece_information.append(square.column)
+                    board_information.append(piece_information)
+
+        self.game_information[str(self.number_of_moves) + ". " + move_name] = board_information
 
 
 

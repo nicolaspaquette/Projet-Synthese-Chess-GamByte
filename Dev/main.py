@@ -1,6 +1,9 @@
 import pygame
 pygame.init()
 
+import json
+from datetime import date
+
 from random import randrange
 import math
 
@@ -33,7 +36,6 @@ class chess_game():
 
         self.is_menu = True
         self.is_game = False
-        self.is_visualize_game = False
         self.is_history = False
         self.select_color = False
 
@@ -84,9 +86,9 @@ class chess_game():
                         if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
 
                             #click on button
-                            if button[0] == "PLAY VS HUMAN" or button[0] == "PLAY VS AI":
+                            if button[0] == "Play vs Human" or button[0] == "Play vs AI":
                                 self.select_color = True
-                                if button[0] == "PLAY VS HUMAN":
+                                if button[0] == "Play vs Human":
                                     self.game_mode = "Human"
                                 else:
                                     self.game_mode = "AI"
@@ -106,7 +108,7 @@ class chess_game():
                                 self.selected_color = "black"
                                 self.is_menu = False
                                 self.is_game = True
-                            elif button[0] == "HISTORY":
+                            elif button[0] == "Game History":
                                 pass
 
             elif self.is_game:
@@ -188,10 +190,10 @@ class chess_game():
                     wait_time += 1
 
                 #after checkmate, return to main menu
-                #if self.board.is_game_over():
-                #    self.is_menu = True
-                #    self.is_game = False
-                #    self.select_color = False
+                if self.board.is_game_over():
+                    self.is_menu = True
+                    self.is_game = False
+                    self.select_color = False
 
                 ##################################################### GAME LOOP ###################################################
 
@@ -222,9 +224,9 @@ class chess_game():
         self.screen.blit(title_2, title_2_rect)
 
         #buttons
-        pos_play_human = self.draw_button("PLAY VS HUMAN", 30, self.white, self.black, 400, 300, 70, 10, False)
-        pos_play_ai = self.draw_button("PLAY VS AI", 30, self.white, self.black, 800, 300, 100, 10, False)
-        pos_history = self.draw_button("HISTORY", 30, self.white, self.black, 100, 600, 175, 10, True)
+        pos_play_human = self.draw_button("Play vs Human", 30, self.white, self.black, 400, 300, 70, 10, False)
+        pos_play_ai = self.draw_button("Play vs AI", 30, self.white, self.black, 800, 300, 100, 10, False)
+        pos_history = self.draw_button("Game History", 30, self.white, self.black, 100, 600, 175, 10, True)
         if self.select_color:
             font = pygame.font.SysFont("Arial", 30)
             mode = "Game mode selected: Human VS " + self.game_mode
@@ -320,7 +322,26 @@ class chess_game():
                 color = self.orange
                 color_switch = True
 
+        info_square_left = square_size*8 + self.starting_pos_left*2
+        info_square_top = square_size*2 + self.starting_pos_top
+        info_square_width = square_size*6
+        info_square_height = square_size*4
+        pygame.draw.rect(self.screen, self.black, (info_square_left, info_square_top, info_square_width, info_square_height))
+
+        #test writing moves
+        font = pygame.font.SysFont("Arial", 16)
+        pe4 = font.render("1. PxE4+ 2. PxE4 3. PE4 4. PE4+ 5. PE4 6. PE4 7. PE4# 8. PE4 9. PxE4", True, self.white)
+        pe4_rect = pe4.get_rect(center=(info_square_left + info_square_width/2, info_square_top + 10))
+        self.screen.blit(pe4, pe4_rect)
+
+        first_move_button = self.draw_button("<<", 30, self.white, self.light_black, info_square_left + 80, info_square_top - square_size/2, info_square_width/15, 5, False)
+        prior_move_button = self.draw_button("<", 30, self.white, self.light_black, info_square_left + (info_square_left/8)+ 80, info_square_top - square_size/2, info_square_width/15, 5, False)
+        next_move_button = self.draw_button(">", 30, self.white, self.light_black, info_square_left + 2*(info_square_left/8)+ 120, info_square_top - square_size/2, info_square_width/15, 5, False)
+        last_move_button = self.draw_button(">>", 30, self.white, self.light_black, info_square_left  + 3*(info_square_left/8)+ 120, info_square_top - square_size/2, info_square_width/15, 5, False)
+        forfeit_button = self.draw_button("Forfeit Game", 30, self.white, self.light_black, info_square_left + info_square_width/2, info_square_top + info_square_height + 40, info_square_width/4, 10, False)
+
         if self.game_started:
+            font = pygame.font.SysFont("Arial", 30)
             turn_to_play = "Turn to play: "+ self.player_turn.color
             turn_to_play_text = font.render(turn_to_play, True, self.black)
             turn_to_play_text_rect = turn_to_play_text.get_rect(center=(150, 25))
@@ -329,9 +350,6 @@ class chess_game():
             self.show_checks_and_checkmates()
 
     def show_history(self):
-        pass
-
-    def show_visualize_game(self):
         pass
 
     def draw_button(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height, is_centered):
@@ -393,11 +411,13 @@ class chess_game():
                     checkmate_rect = checkmate.get_rect(center=(525, 25))
                     self.screen.blit(checkmate, checkmate_rect)
                     self.board.game_over_result = "Checkmate"
+                    self.board.winner = "Black"
                 else:
                     stalemate = font.render("White King Stalemate", True, self.black)
                     stalemate_rect = stalemate.get_rect(center=(525, 25))
                     self.screen.blit(stalemate, stalemate_rect)
                     self.board.game_over_result = "Stalemate"
+                    self.board.winner = "Draw"
 
             elif self.board.is_king_in_checkmate("black") != False:
                 self.board.game_over = True
@@ -406,11 +426,13 @@ class chess_game():
                     checkmate_rect = checkmate.get_rect(center=(525, 25))
                     self.screen.blit(checkmate, checkmate_rect)
                     self.board.game_over_result = "Checkmate"
+                    self.board.winner = "White"
                 else:
                     stalemate = font.render("Black King Stalemate", True, self.black)
                     stalemate_rect = stalemate.get_rect(center=(525, 25))
                     self.screen.blit(stalemate, stalemate_rect)
                     self.board.game_over_result = "Stalemate"
+                    self.board.winner = "Draw"
 
             elif self.board.is_king_in_check(self.board.white_king_pos[0], self.board.white_king_pos[1]):
                 check = font.render("White King Check", True, self.black)
@@ -421,6 +443,16 @@ class chess_game():
                 check = font.render("Black King Check", True, self.black)
                 check_rect = check.get_rect(center=(550, 25))
                 self.screen.blit(check, check_rect)
+
+    def save_game(self):
+        self.board.game_information["Winner"] = self.board.winner
+        self.board.game_information["Result"] = self.board.game_over_result
+        self.board.game_information["Date"] = date.today()
+
+        # TRANSFORM IN JSON JSON.DUMPS()
+
+        #CALL DAO TO SAVE GAME IN DB 
+
 
 if __name__ == "__main__":
     chess_game = chess_game()
