@@ -39,9 +39,11 @@ class chess_game():
         self.is_history = False
         self.select_color = False
 
-        self.button_positions = []
-        self.color_button_positions = True
-        self.menu_button_positions = True
+        self.game_button_positions = []
+        self.game_buttons_init = True
+        self.menu_button_positions = []
+        self.color_buttons_init = True
+        self.game_mode_buttons_init = True
         self.mouse = None
 
         self.selected_color = None
@@ -52,7 +54,6 @@ class chess_game():
         self.black_bottom_column_values = {0: "H", 1: "G", 2: "F", 3: "E", 4: "D", 5: "C", 6: "B", 7: "A"}
         self.black_bottom_row_values = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
 
-        self.players = []
         self.are_players_initialized = False
 
         self.player_turn = None
@@ -80,9 +81,10 @@ class chess_game():
                     self.mouse = pygame.mouse.get_pos()
 
             if self.is_menu:
+                wait_time = 0
                 self.show_menu()
                 if self.mouse != None:
-                    for button in self.button_positions: # button: [texte, left, top, width, height]
+                    for button in self.menu_button_positions: # button: [texte, left, top, width, height]
                         if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
 
                             #click on button
@@ -189,16 +191,37 @@ class chess_game():
 
                     wait_time += 1
 
+                    if self.mouse != None:
+                        for button in self.game_button_positions: # button: [texte, left, top, width, height]
+                            if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
+                                
+                                if button[0] == "<<":
+                                    print("first move")
+                                elif button[0] == "<":
+                                    print("prior move")
+                                elif button[0] == ">":
+                                    print("next move")
+                                elif button[0] == ">>":
+                                    print("last move")
+                                elif button[0] == "Forfeit Game":
+                                    self.board.game_over = True
+                                    self.board.game_over_result = "Forfeit"
+                                    if self.board.human_player_color == "white":
+                                        self.board.winner = "black"
+                                    else:
+                                        self.board.winner = "white"
+
                 #after checkmate, return to main menu
-                if self.board.is_game_over():
+                if self.board.game_over:
+                    print("GAME OVER")
                     self.is_menu = True
                     self.is_game = False
                     self.select_color = False
+                    self.are_players_initialized = False
+                    self.game_started = False
+                    #SAVE GAME ()
 
                 ##################################################### GAME LOOP ###################################################
-
-            elif self.is_visualize_game:
-                self.show_visualize_game()
 
             elif self.is_history:
                 self.show_history()
@@ -209,6 +232,10 @@ class chess_game():
             self.mouse = None
 
         pygame.quit()
+
+
+    ##################################################### FUNCTIONS ###################################################
+
 
     def show_menu(self):
         pygame.display.set_caption("Main Menu")
@@ -241,17 +268,17 @@ class chess_game():
             pos_white = self.draw_button("White", 30, self.black, self.white, 450, 430, 10, 10, False)
             pos_random = self.draw_button("Random", 30, self.white, self.light_black, 100, 430, 10, 10, True)
             pos_black = self.draw_button("Black", 30, self.white, self.black, 750, 430, 10, 10, False)
-            if self.color_button_positions:
-                self.color_button_positions = False
-                self.button_positions.append(pos_white)
-                self.button_positions.append(pos_random)
-                self.button_positions.append(pos_black)
+            if self.color_buttons_init:
+                self.color_buttons_init = False
+                self.menu_button_positions.append(pos_white)
+                self.menu_button_positions.append(pos_random)
+                self.menu_button_positions.append(pos_black)
 
-        if self.menu_button_positions:
-            self.menu_button_positions = False
-            self.button_positions.append(pos_play_human)
-            self.button_positions.append(pos_play_ai)
-            self.button_positions.append(pos_history)
+        if self.game_mode_buttons_init:
+            self.game_mode_buttons_init = False
+            self.menu_button_positions.append(pos_play_human)
+            self.menu_button_positions.append(pos_play_ai)
+            self.menu_button_positions.append(pos_history)
 
     def show_game(self):
         pygame.display.set_caption("Game")
@@ -327,18 +354,29 @@ class chess_game():
         info_square_width = square_size*6
         info_square_height = square_size*4
         pygame.draw.rect(self.screen, self.black, (info_square_left, info_square_top, info_square_width, info_square_height))
-
-        #test writing moves
-        font = pygame.font.SysFont("Arial", 16)
-        pe4 = font.render("1. PxE4+ 2. PxE4 3. PE4 4. PE4+ 5. PE4 6. PE4 7. PE4# 8. PE4 9. PxE4", True, self.white)
-        pe4_rect = pe4.get_rect(center=(info_square_left + info_square_width/2, info_square_top + 10))
-        self.screen.blit(pe4, pe4_rect)
+        
+        font = pygame.font.SysFont("Arial", 15)
+        move_names = self.get_move_names()
+        top_pos = 10
+        for row in move_names:
+            names = font.render(row, True, self.white)
+            names_rect = names.get_rect(center=(info_square_left + info_square_width/2, info_square_top + top_pos))
+            self.screen.blit(names, names_rect)
+            top_pos += 20
 
         first_move_button = self.draw_button("<<", 30, self.white, self.light_black, info_square_left + 80, info_square_top - square_size/2, info_square_width/15, 5, False)
         prior_move_button = self.draw_button("<", 30, self.white, self.light_black, info_square_left + (info_square_left/8)+ 80, info_square_top - square_size/2, info_square_width/15, 5, False)
         next_move_button = self.draw_button(">", 30, self.white, self.light_black, info_square_left + 2*(info_square_left/8)+ 120, info_square_top - square_size/2, info_square_width/15, 5, False)
         last_move_button = self.draw_button(">>", 30, self.white, self.light_black, info_square_left  + 3*(info_square_left/8)+ 120, info_square_top - square_size/2, info_square_width/15, 5, False)
         forfeit_button = self.draw_button("Forfeit Game", 30, self.white, self.light_black, info_square_left + info_square_width/2, info_square_top + info_square_height + 40, info_square_width/4, 10, False)
+
+        if self.game_buttons_init:
+            self.game_buttons_init = False
+            self.game_button_positions.append(first_move_button)
+            self.game_button_positions.append(prior_move_button)
+            self.game_button_positions.append(next_move_button)
+            self.game_button_positions.append(last_move_button)
+            self.game_button_positions.append(forfeit_button)
 
         if self.game_started:
             font = pygame.font.SysFont("Arial", 30)
@@ -365,6 +403,7 @@ class chess_game():
         return [text, message_rect[0] - border_size_width, message_rect[1] - border_size_height, message.get_width() + (border_size_width * 2), message.get_height() + (border_size_height * 2)]
 
     def initialize_players(self):
+        self.players = []
         if self.selected_color == "white":
             self.board.bottom_color = "white"
             opponent_color = "black"
@@ -451,8 +490,29 @@ class chess_game():
 
         # TRANSFORM IN JSON JSON.DUMPS()
 
-        #CALL DAO TO SAVE GAME IN DB 
+        #CALL DAO TO SAVE GAME IN DB
+        # 
+    def get_move_names(self):
+        keys = self.board.game_information.keys()
+        move_names = []
+        row = []
+        move_row = ""
+        counter = 0
 
+        #changes row after 9 moves for display
+        for key in keys:
+            if key != "Winner" or key != "Result" or key != "Date":
+                counter += 1
+                move_row += (" " + key)
+                if counter >= 8:
+                    move_names.append(move_row)
+                    counter = 0
+                    move_row = ""
+
+        if len(move_row) > 0:
+            move_names.append(move_row)
+
+        return move_names
 
 if __name__ == "__main__":
     chess_game = chess_game()
