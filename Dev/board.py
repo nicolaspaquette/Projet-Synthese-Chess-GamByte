@@ -178,6 +178,8 @@ class board:
 
         # register move in move_list if a real move is played
         if not is_verifying:
+            self.get_kings_positions()
+            
             if moving_piece.name == "king" and starting_row == final_row and (starting_column + 2 == final_column or starting_column - 2 == final_column):
                 is_castling = True
 
