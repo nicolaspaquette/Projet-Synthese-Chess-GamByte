@@ -234,7 +234,9 @@ class chess_game():
         pygame.quit()
 
 
+
     ##################################################### FUNCTIONS ###################################################
+
 
 
     def show_menu(self):
@@ -489,9 +491,8 @@ class chess_game():
         self.board.game_information["Date"] = date.today()
 
         # TRANSFORM IN JSON JSON.DUMPS()
-
         #CALL DAO TO SAVE GAME IN DB
-        # 
+        
     def get_move_names(self):
         keys = self.board.game_information.keys()
         move_names = []
