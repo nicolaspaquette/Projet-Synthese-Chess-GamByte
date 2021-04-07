@@ -33,12 +33,15 @@ class board:
         self.winner = None
         self.game_over_result = None
         self.game_information = {}
+        self.game_information["Moves"] = {}
         self.move = []
         self.number_of_moves = 0
         self.white_bottom_column_values = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
         self.white_bottom_row_values = {0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
         self.black_bottom_column_values = {0: "H", 1: "G", 2: "F", 3: "E", 4: "D", 5: "C", 6: "B", 7: "A"}
         self.black_bottom_row_values = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
+
+        self.viewing_index = 0
 
     def initialize_board(self):
         position = []
@@ -621,7 +624,8 @@ class board:
                     piece_information.append(square.column)
                     board_information.append(piece_information)
 
-        self.game_information[str(self.number_of_moves) + ". " + move_name] = board_information
+        self.game_information["Moves"][str(self.number_of_moves) + ". " + move_name] = board_information
+        self.viewing_index = len(self.game_information["Moves"]) - 1
 
 
 
