@@ -18,6 +18,12 @@ class game_history_DAO(DAO):
         return self.next_id
 
     def save_game(self, game_info):
-        insert = self.collection.insert_one(game_info)
-        print(insert.inserted_id)
+        self.collection.insert_one(game_info)
+
+    def get_all_games(self):
+        all_games = []
+        for game in self.collection.find():
+            all_games.append(game)
+        #all_games[0]["_id"]
+        return all_games
 

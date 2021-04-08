@@ -36,6 +36,7 @@ class chess_game():
         self.is_history = False
         self.select_color = False
 
+        self.history_button_positions = []
         self.game_button_positions = []
         self.game_buttons_init = True
         self.menu_button_positions = []
@@ -113,7 +114,9 @@ class chess_game():
                                 self.is_menu = False
                                 self.is_game = True
                             elif button[0] == "Game History":
-                                pass
+                                self.is_menu = False
+                                self.is_game = False
+                                self.is_history = True
 
             elif self.is_game:
                 if not self.are_players_initialized:
@@ -126,7 +129,6 @@ class chess_game():
                     self.start_game()
 
                 self.show_game()
-                
                 ##################################################### GAME LOOP ###################################################
                 if not self.board.game_over:
                     # human player turn
@@ -234,15 +236,22 @@ class chess_game():
                     if not self.game_saved:
                         self.save_game()
                         self.game_saved = True
-
                 ##################################################### GAME LOOP ###################################################
 
             elif self.is_history:
                 self.show_history()
+
+                if self.mouse != None:
+                    for button in self.history_button_positions: # button: [texte, left, top, width, height]
+                        if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
+
+                            if button[0] == "Main Menu":
+                                self.is_menu = True
+                                self.is_history = False
             
+
             self.window.blit(self.screen, (0,0))
             pygame.display.update()
-
             self.mouse = None
 
         pygame.quit()
@@ -430,7 +439,12 @@ class chess_game():
             self.screen.blit(board_state_text, board_state_text_rect)
 
     def show_history(self):
-        pass
+        pygame.display.set_caption("Game")
+        self.screen.fill(self.grey)
+
+        return_menu_button = self.draw_button("Main Menu", 30, self.white, self.black, 1100, 45, 20, 10, False)
+        self.history_button_positions.append(return_menu_button)
+
 
     def draw_button(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height, is_centered):
         font = pygame.font.SysFont("Arial", font_size)
