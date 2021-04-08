@@ -1,21 +1,15 @@
 import pygame
 pygame.init()
-
 import json
-from datetime import date
-
+from datetime import datetime
 from random import randrange
 import math
-
 from board import board
-
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent) + '/players_script')
-
 from ai import ai
 from human import human
-
 sys.path.append(str(Path(__file__).parent) + '/DAO_script')
 from game_history_DAO import game_history_DAO
 
@@ -50,7 +44,7 @@ class chess_game():
         self.mouse = None
 
         self.selected_color = None
-        self.path = str(Path(__file__).parent) + '/assets/pieces/'
+        self.path = str(Path(__file__).parent) + '/assets/'
 
         self.white_bottom_column_values = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
         self.white_bottom_row_values = {0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
@@ -68,6 +62,7 @@ class chess_game():
         self.starting_row = None
         self.starting_column = None
         self.game_mode = None
+        self.game_saved = False
 
         self.viewing_current_move = True
 
@@ -233,10 +228,12 @@ class chess_game():
                                 self.select_color = False
                                 self.are_players_initialized = False
                                 self.game_started = False
+
                 #after checkmate, return to main menu
                 if self.board.game_over:
-                    print("GAME OVER")
-                    #SAVE GAME ()
+                    if not self.game_saved:
+                        self.save_game()
+                        self.game_saved = True
 
                 ##################################################### GAME LOOP ###################################################
 
@@ -469,6 +466,7 @@ class chess_game():
             self.player_turn = self.players[0]
         else:
             self.player_turn = self.players[1]
+        self.game_saved = False
     
     def change_player_turn(self):
         if self.player_turn == self.players[0]:
@@ -530,11 +528,11 @@ class chess_game():
                 self.screen.blit(check, check_rect)
 
     def save_game(self):
+        self.board.game_information["_id"] = self.game_history_DAO.get_next_id()
         self.board.game_information["Winner"] = self.board.winner
         self.board.game_information["Result"] = self.board.game_over_result
-        self.board.game_information["Date"] = date.today()
-        # TRANSFORM IN JSON JSON.DUMPS()
-        #CALL DAO TO SAVE GAME IN DB
+        self.board.game_information["Date"] = datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+        self.game_history_DAO.save_game(self.board.game_information)
         
     def get_move_names(self):
         keys = self.board.game_information["Moves"].keys()

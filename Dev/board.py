@@ -624,7 +624,7 @@ class board:
                     piece_information.append(square.column)
                     board_information.append(piece_information)
 
-        self.game_information["Moves"][str(self.number_of_moves) + ". " + move_name] = board_information
+        self.game_information["Moves"][str(self.number_of_moves) + ": " + move_name] = board_information
         self.viewing_index = len(self.game_information["Moves"]) - 1
 
 
