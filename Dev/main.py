@@ -66,8 +66,12 @@ class chess_game():
         self.game_saved = False
 
         self.viewing_current_move = True
+        self.viewing_game_in_db = False
+        self.current_game_in_bd_viewed = None
+        self.viewing_index = 0
 
         self.game_history_DAO = game_history_DAO()
+        self.list_games = []
 
     def main(self):
         is_running = True
@@ -101,6 +105,7 @@ class chess_game():
                                 self.selected_color = "white"
                                 self.is_menu = False
                                 self.is_game = True
+                                self.viewing_game_in_db = False
                             elif button[0] == "Random":
                                 random = randrange(10)
                                 if random % 2 == 0:
@@ -109,28 +114,33 @@ class chess_game():
                                     self.selected_color = "black"
                                 self.is_menu = False
                                 self.is_game = True
+                                self.viewing_game_in_db = False
                             elif button[0] == "Black":
                                 self.selected_color = "black"
                                 self.is_menu = False
                                 self.is_game = True
+                                self.viewing_game_in_db = False
                             elif button[0] == "Game History":
                                 self.is_menu = False
                                 self.is_game = False
                                 self.is_history = True
+                                self.list_games = self.game_history_DAO.get_all_games()
+                                self.list_games.reverse()
 
             elif self.is_game:
                 if not self.are_players_initialized:
                     self.board = board(self.selected_color)
                     self.initialize_players()
                     self.are_players_initialized = True
-
+        
                 if not self.game_started:
                     self.game_started = True
                     self.start_game()
 
                 self.show_game()
+
                 ##################################################### GAME LOOP ###################################################
-                if not self.board.game_over:
+                if not self.board.game_over and not self.viewing_game_in_db:
                     # human player turn
                     if self.player_turn == self.players[0]:
                         if self.mouse != None:
@@ -200,23 +210,37 @@ class chess_game():
                         if self.mouse[0] >= button[1] and self.mouse[0] <= button[1] + button[3] and self.mouse[1] >= button[2] and self.mouse[1] <= button[2] + button[4]:
                             
                             if button[0] == "<<":
-                                if len(self.board.game_information["Moves"]) > 0:
-                                    self.viewing_current_move = False
-                                    self.board.viewing_index = 0
+                                if not self.viewing_game_in_db:
+                                    if len(self.board.game_information["Moves"]) > 0:
+                                        self.viewing_current_move = False
+                                        self.board.viewing_index = 0
+                                else:
+                                    self.viewing_index = 0
                             elif button[0] == "<":
-                                if len(self.board.game_information["Moves"]) > 0:
-                                    self.viewing_current_move = False
-                                    if self.board.viewing_index > 0:
-                                        self.board.viewing_index -= 1
+                                if not self.viewing_game_in_db:
+                                    if len(self.board.game_information["Moves"]) > 0:
+                                        self.viewing_current_move = False
+                                        if self.board.viewing_index > 0:
+                                            self.board.viewing_index -= 1
+                                else:
+                                    if self.viewing_index > 0:
+                                        self.viewing_index -= 1
                             elif button[0] == ">":
-                                self.viewing_current_move = False
-                                if self.board.viewing_index < len(self.board.game_information["Moves"]) - 1:
-                                    self.board.viewing_index += 1
-                                if self.board.viewing_index == len(self.board.game_information["Moves"]) - 1:
-                                    self.viewing_current_move = True
+                                if not self.viewing_game_in_db:
+                                    self.viewing_current_move = False
+                                    if self.board.viewing_index < len(self.board.game_information["Moves"]) - 1:
+                                        self.board.viewing_index += 1
+                                    if self.board.viewing_index == len(self.board.game_information["Moves"]) - 1:
+                                        self.viewing_current_move = True
+                                else:
+                                    if self.viewing_index < len(self.current_game_in_bd_viewed["Moves"]) - 1 :
+                                        self.viewing_index += 1
                             elif button[0] == ">>":
-                                self.viewing_current_move = True
-                                self.board.viewing_index = len(self.board.game_information["Moves"]) - 1
+                                if not self.viewing_game_in_db:
+                                    self.viewing_current_move = True
+                                    self.board.viewing_index = len(self.board.game_information["Moves"]) - 1
+                                else:
+                                    self.viewing_index = len(self.current_game_in_bd_viewed["Moves"]) - 1
                             elif button[0] == "Forfeit Game":
                                 self.board.game_over = True
                                 self.board.game_over_result = "Forfeit"
@@ -230,9 +254,10 @@ class chess_game():
                                 self.select_color = False
                                 self.are_players_initialized = False
                                 self.game_started = False
+                                self.viewing_index = 0
+                                self.select_color = False
 
-                #after checkmate, return to main menu
-                if self.board.game_over:
+                if self.board.game_over and not self.viewing_game_in_db:
                     if not self.game_saved:
                         self.save_game()
                         self.game_saved = True
@@ -248,7 +273,16 @@ class chess_game():
                             if button[0] == "Main Menu":
                                 self.is_menu = True
                                 self.is_history = False
-            
+                                self.select_color = False
+                            elif "View Game" in button[0]:
+                                self.viewing_game_in_db = True
+                                game_id = int(button[0][-1])
+                                for game in self.list_games:
+                                    if game["_id"] == game_id:
+                                        self.current_game_in_bd_viewed = game
+
+                                self.is_history = False
+                                self.is_game = True            
 
             self.window.blit(self.screen, (0,0))
             pygame.display.update()
@@ -278,7 +312,7 @@ class chess_game():
         #buttons
         pos_play_human = self.draw_button("Play vs Human", 30, self.white, self.black, 400, 300, 70, 10, False)
         pos_play_ai = self.draw_button("Play vs AI", 30, self.white, self.black, 800, 300, 100, 10, False)
-        pos_history = self.draw_button("Game History", 30, self.white, self.black, 100, 600, 175, 10, True)
+        pos_history = self.draw_button("Game History", 30, self.white, self.black, 100, 550, 175, 10, True)
         if self.select_color:
             font = pygame.font.SysFont("Arial", 30)
             mode = "Game mode selected: Human VS " + self.game_mode
@@ -348,7 +382,7 @@ class chess_game():
                 pygame.draw.rect(self.screen, color, (left, top, square_size, square_size))
 
                 #show pieces on squares
-                if self.viewing_current_move: #if its the current move, otherwise show the positions of past moves
+                if self.viewing_current_move and not self.viewing_game_in_db: #if its the current move, otherwise show the positions of past moves
                     square_piece = square.get_piece()
                     if square_piece != None:
                         path = str(self.path + square_piece.color + "_" + square_piece.name + ".png")
@@ -357,8 +391,13 @@ class chess_game():
                         piece_image.convert()
                         self.screen.blit(piece_image, (left, top, square_size, square_size))
                 else:
-                    piece_list = list(self.board.game_information["Moves"].values())
-                    piece_position_at_index = piece_list[self.board.viewing_index]
+                    if not self.viewing_game_in_db:
+                        piece_list = list(self.board.game_information["Moves"].values())
+                        piece_position_at_index = piece_list[self.board.viewing_index]
+                    else:
+                        piece_list = list(self.current_game_in_bd_viewed["Moves"].values())
+                        piece_position_at_index = piece_list[self.viewing_index]
+
                     #['color', 'piece', row, column]
                     for piece_info in piece_position_at_index:
                         if square.row == piece_info[2] and square.column == piece_info[3]:
@@ -394,22 +433,27 @@ class chess_game():
         pygame.draw.rect(self.screen, self.black, (info_square_left, info_square_top, info_square_width, info_square_height))
         
         font = pygame.font.SysFont("Arial", 15)
-        if len(self.board.game_information["Moves"]) > 0:
-            move_names = self.get_move_names()
-            top_pos = 10
-            for row in move_names:
-                names = font.render(row, True, self.white)
-                names_rect = names.get_rect(center=(info_square_left + info_square_width/2, info_square_top + top_pos))
-                self.screen.blit(names, names_rect)
-                top_pos += 20
+        move_names = self.get_move_names()
+        top_pos = 10
+        for row in move_names:
+            names = font.render(row, True, self.white)
+            names_rect = names.get_rect(center=(info_square_left + info_square_width/2, info_square_top + top_pos))
+            self.screen.blit(names, names_rect)
+            top_pos += 20
 
         #buttons to move through the list
         first_move_button = self.draw_button("<<", 30, self.white, self.light_black, info_square_left + 80, info_square_top - square_size/2, info_square_width/15, 5, False)
         prior_move_button = self.draw_button("<", 30, self.white, self.light_black, info_square_left + (info_square_left/8)+ 80, info_square_top - square_size/2, info_square_width/15, 5, False)
         next_move_button = self.draw_button(">", 30, self.white, self.light_black, info_square_left + 2*(info_square_left/8)+ 120, info_square_top - square_size/2, info_square_width/15, 5, False)
         last_move_button = self.draw_button(">>", 30, self.white, self.light_black, info_square_left  + 3*(info_square_left/8)+ 120, info_square_top - square_size/2, info_square_width/15, 5, False)
-        forfeit_button = self.draw_button("Forfeit Game", 30, self.white, self.light_black, info_square_left + info_square_width/2, info_square_top + info_square_height + 40, info_square_width/4, 10, False)
-        if self.board.game_over:
+        if not self.viewing_game_in_db:
+            forfeit_button = self.draw_button("Forfeit Game", 30, self.white, self.light_black, info_square_left + info_square_width/2, info_square_top + info_square_height + 40, info_square_width/4, 10, False)
+            self.game_button_positions.append(forfeit_button)
+
+        if self.board.game_over and not self.viewing_game_in_db:
+            return_menu_button = self.draw_button("Main Menu", 30, self.white, self.black, 1100, 45, 20, 10, False)
+            self.game_button_positions.append(return_menu_button)
+        elif self.viewing_game_in_db:
             return_menu_button = self.draw_button("Main Menu", 30, self.white, self.black, 1100, 45, 20, 10, False)
             self.game_button_positions.append(return_menu_button)
 
@@ -419,9 +463,8 @@ class chess_game():
             self.game_button_positions.append(prior_move_button)
             self.game_button_positions.append(next_move_button)
             self.game_button_positions.append(last_move_button)
-            self.game_button_positions.append(forfeit_button)
 
-        if self.game_started and self.viewing_current_move:
+        if self.game_started and self.viewing_current_move and not self.viewing_game_in_db:
             font = pygame.font.SysFont("Arial", 30)
             turn_to_play = "Turn to play: "+ self.player_turn.color
             turn_to_play_text = font.render(turn_to_play, True, self.black)
@@ -430,10 +473,14 @@ class chess_game():
 
             self.show_checks_and_checkmates()
 
-        if self.game_started and len(self.board.game_information["Moves"]) > 0:
+        if (self.game_started and len(self.board.game_information["Moves"]) > 0) or self.viewing_game_in_db:
             font = pygame.font.SysFont("Arial", 30)
-            keys_list = list(self.board.game_information["Moves"].keys())
-            board_state = "Board state with last move: " + keys_list[self.board.viewing_index]
+            if not self.viewing_game_in_db:
+                keys_list = list(self.board.game_information["Moves"].keys())
+                board_state = "Board state with last move: " + keys_list[self.board.viewing_index]
+            else:
+                keys_list = list(self.current_game_in_bd_viewed["Moves"].keys())
+                board_state = "Board state with last move: " + keys_list[self.viewing_index]
             board_state_text = font.render(board_state, True, self.black)
             board_state_text_rect = board_state_text.get_rect(center=(info_square_left + info_square_width/2, info_square_top + info_square_height * 1.4))
             self.screen.blit(board_state_text, board_state_text_rect)
@@ -444,6 +491,45 @@ class chess_game():
 
         return_menu_button = self.draw_button("Main Menu", 30, self.white, self.black, 1100, 45, 20, 10, False)
         self.history_button_positions.append(return_menu_button)
+
+        font = pygame.font.SysFont("Arial", 40)
+
+        date_text = font.render("Date", True, self.black)
+        date_text_rect = date_text.get_rect(center=(150, 45))
+        self.screen.blit(date_text, date_text_rect)
+        result_text = font.render("Result", True, self.black)
+        result_text_rect = result_text.get_rect(center=(350, 45))
+        self.screen.blit(result_text, result_text_rect)
+        winner_text = font.render("Winner", True, self.black)
+        winner_text_rect = winner_text.get_rect(center=(550, 45))
+        self.screen.blit(winner_text, winner_text_rect)
+        nb_text = font.render("Number of moves", True, self.black)
+        nb_text_rect = nb_text.get_rect(center=(800, 45))
+        self.screen.blit(nb_text, nb_text_rect)
+
+        font = pygame.font.SysFont("Arial", 25)
+        top_pos = 150
+        first_game = 0
+        last_game = 8
+        for i in range(first_game,last_game):
+            if i == len(self.list_games):
+                break
+
+            game_date_text = font.render(self.list_games[i]["Date"], True, self.black)
+            game_date_text_rect = game_date_text.get_rect(center=(150, top_pos))
+            self.screen.blit(game_date_text, game_date_text_rect)
+            game_result_text = font.render(self.list_games[i]["Result"], True, self.black)
+            game_result_text_rect = game_result_text.get_rect(center=(350, top_pos))
+            self.screen.blit(game_result_text, game_result_text_rect)
+            game_winner_text = font.render(self.list_games[i]["Winner"], True, self.black)
+            game_winner_text_rect = game_winner_text.get_rect(center=(550, top_pos))
+            self.screen.blit(game_winner_text, game_winner_text_rect)
+            game_nb_text = font.render(str(len(self.list_games[i]["Moves"])), True, self.black)
+            game_nb_text_rect = game_nb_text.get_rect(center=(800, top_pos))
+            self.screen.blit(game_nb_text, game_nb_text_rect)
+            view_game_button = self.draw_button("View Game " + str(self.list_games[i]["_id"]), 25, self.white, self.light_black, 1000, top_pos, 10, 5, False)
+            self.history_button_positions.append(view_game_button)
+            top_pos += 60
 
 
     def draw_button(self, text, font_size, font_color, color, left, top, border_size_width, border_size_height, is_centered):
@@ -549,7 +635,10 @@ class chess_game():
         self.game_history_DAO.save_game(self.board.game_information)
         
     def get_move_names(self):
-        keys = self.board.game_information["Moves"].keys()
+        if not self.viewing_game_in_db:
+            keys = self.board.game_information["Moves"].keys()
+        else:
+            keys = self.current_game_in_bd_viewed["Moves"].keys()
         move_names = []
         row = []
         move_row = ""

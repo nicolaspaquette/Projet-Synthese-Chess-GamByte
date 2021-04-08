@@ -24,6 +24,5 @@ class game_history_DAO(DAO):
         all_games = []
         for game in self.collection.find():
             all_games.append(game)
-        #all_games[0]["_id"]
         return all_games
 
