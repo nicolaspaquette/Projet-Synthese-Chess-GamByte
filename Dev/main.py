@@ -211,14 +211,14 @@ class chess_game():
                             
                             if button[0] == "<<":
                                 if not self.viewing_game_in_db:
-                                    if len(self.board.game_information["Moves"]) > 0:
+                                    if len(self.board.game_information["Moves"]) >= 2:
                                         self.viewing_current_move = False
                                         self.board.viewing_index = 0
                                 else:
                                     self.viewing_index = 0
                             elif button[0] == "<":
                                 if not self.viewing_game_in_db:
-                                    if len(self.board.game_information["Moves"]) > 0:
+                                    if len(self.board.game_information["Moves"]) >= 2:
                                         self.viewing_current_move = False
                                         if self.board.viewing_index > 0:
                                             self.board.viewing_index -= 1
@@ -226,15 +226,16 @@ class chess_game():
                                     if self.viewing_index > 0:
                                         self.viewing_index -= 1
                             elif button[0] == ">":
-                                if not self.viewing_game_in_db:
-                                    self.viewing_current_move = False
-                                    if self.board.viewing_index < len(self.board.game_information["Moves"]) - 1:
-                                        self.board.viewing_index += 1
-                                    if self.board.viewing_index == len(self.board.game_information["Moves"]) - 1:
-                                        self.viewing_current_move = True
-                                else:
-                                    if self.viewing_index < len(self.current_game_in_bd_viewed["Moves"]) - 1 :
-                                        self.viewing_index += 1
+                                    if not self.viewing_game_in_db:
+                                        if len(self.board.game_information["Moves"]) > 0:
+                                            self.viewing_current_move = False
+                                            if self.board.viewing_index < len(self.board.game_information["Moves"]) - 1:
+                                                self.board.viewing_index += 1
+                                            if self.board.viewing_index == len(self.board.game_information["Moves"]) - 1:
+                                                self.viewing_current_move = True
+                                    else:
+                                        if self.viewing_index < len(self.current_game_in_bd_viewed["Moves"]) - 1:
+                                            self.viewing_index += 1
                             elif button[0] == ">>":
                                 if not self.viewing_game_in_db:
                                     self.viewing_current_move = True
@@ -355,12 +356,23 @@ class chess_game():
         font = pygame.font.SysFont("Arial", 30)
 
         #letter/number of squares depending orientation of board
-        if self.selected_color == "white":
-            col_text = self.white_bottom_column_values
-            row_text = self.white_bottom_row_values
+        if not self.viewing_game_in_db:
+            if self.selected_color == "white":
+                col_text = self.white_bottom_column_values
+                row_text = self.white_bottom_row_values
+            else:
+                col_text = self.black_bottom_column_values
+                row_text = self.black_bottom_row_values
         else:
-            col_text = self.black_bottom_column_values
-            row_text = self.black_bottom_row_values
+            moves = list(self.current_game_in_bd_viewed["Moves"].keys())
+
+            # get the first element of the first move to see which color is on the bottom of the screen
+            if self.current_game_in_bd_viewed["Moves"][moves[0]][0][0] == "black":
+                col_text = self.white_bottom_column_values
+                row_text = self.white_bottom_row_values
+            else:
+                col_text = self.black_bottom_column_values
+                row_text = self.black_bottom_row_values
         
         for row in self.board.position:
 
