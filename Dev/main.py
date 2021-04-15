@@ -245,9 +245,9 @@ class chess_game():
                                 self.board.game_over = True
                                 self.board.game_over_result = "Forfeit"
                                 if self.board.human_player_color == "white":
-                                    self.board.winner = "black"
+                                    self.board.winner = "Black"
                                 else:
-                                    self.board.winner = "white"
+                                    self.board.winner = "White"
                             elif button[0] == "Main Menu":
                                 self.is_menu = True
                                 self.is_game = False
