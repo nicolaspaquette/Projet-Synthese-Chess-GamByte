@@ -389,14 +389,15 @@ class board:
                         self.black_king_pos = (square.row, square.column)
 
     def en_passant_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, move_done, is_verifying):
-        if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
-            if self.en_passant_piece.color == moving_piece.color:
-                self.en_passant_piece.can_be_captured_en_passant = False
-                self.en_passant_piece = None
+        if not is_verifying:
+            if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
+                if self.en_passant_piece.color == moving_piece.color:
+                    self.en_passant_piece.can_be_captured_en_passant = False
+                    self.en_passant_piece = None
 
-        if moving_piece.name == "pawn" and starting_row == moving_piece.initialized_row and (final_row - starting_row == 2 or final_row - starting_row == -2):
-            moving_piece.can_be_captured_en_passant = True
-            self.en_passant_piece = moving_piece
+            if moving_piece.name == "pawn" and starting_row == moving_piece.initialized_row and (final_row - starting_row == 2 or final_row - starting_row == -2):
+                moving_piece.can_be_captured_en_passant = True
+                self.en_passant_piece = moving_piece
 
         if final_row < 7 and final_row > 0 and final_column < 7 and final_column > 0:
             if self.position[final_row][final_column].get_piece() != None and (self.position[final_row - 1][final_column].get_piece() != None or self.position[final_row + 1][final_column].get_piece() != None):

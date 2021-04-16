@@ -127,6 +127,10 @@ class chess_game():
                                 self.is_history = True
                                 self.list_games = self.game_history_DAO.get_all_games()
                                 self.list_games.reverse()
+                                self.first_game_DB = 0
+                                self.last_game_DB = 7
+                                self.page_chosen = False
+                                self.tick = 0
 
             elif self.is_game:
                 if not self.are_players_initialized:
@@ -266,6 +270,7 @@ class chess_game():
 
             elif self.is_history:
                 self.show_history()
+                self.tick += 1
 
                 if self.mouse != None:
                     for button in self.history_button_positions: # button: [texte, left, top, width, height]
@@ -283,7 +288,22 @@ class chess_game():
                                         self.current_game_in_bd_viewed = game
 
                                 self.is_history = False
-                                self.is_game = True            
+                                self.is_game = True
+                            elif button[0] == "Last page":
+                                if self.first_game_DB > 0 and not self.page_chosen:
+                                    self.first_game_DB -= 7
+                                    self.last_game_DB -= 7
+                                    self.page_chosen = True
+                            elif button[0] == "Next page":
+                                if self.last_game_DB < len(self.list_games) and not self.page_chosen:
+                                    self.first_game_DB += 7
+                                    self.last_game_DB += 7
+                                    self.page_chosen = True
+
+                            if self.tick >= 6:
+                                self.page_chosen = False
+                                self.tick = 0
+
 
             self.window.blit(self.screen, (0,0))
             pygame.display.update()
@@ -488,14 +508,25 @@ class chess_game():
             self.screen.blit(board_state_text, board_state_text_rect)
 
     def show_history(self):
-        pygame.display.set_caption("Game")
+        pygame.display.set_caption("History")
         self.screen.fill(self.grey)
 
         return_menu_button = self.draw_button("Main Menu", 30, self.white, self.black, 1100, 45, 20, 10, False)
         self.history_button_positions.append(return_menu_button)
 
-        font = pygame.font.SysFont("Arial", 40)
+        last_page_button = self.draw_button("Last page", 30, self.white, self.black, 400, 655, 20, 10, False)
+        self.history_button_positions.append(last_page_button)
 
+        next_page_button = self.draw_button("Next page", 30, self.white, self.black, 800, 655, 20, 10, False)
+        self.history_button_positions.append(next_page_button)
+
+        font = pygame.font.SysFont("Arial", 25)
+        page = "Page " + str(int(self.last_game_DB/7)) + " of " + str(int(len(self.list_games)/7 + 1))
+        page_text = font.render(page, True, self.black)
+        page_text_rect = page_text.get_rect(center=(600, 655))
+        self.screen.blit(page_text, page_text_rect)
+
+        font = pygame.font.SysFont("Arial", 40)
         date_text = font.render("Date", True, self.black)
         date_text_rect = date_text.get_rect(center=(150, 45))
         self.screen.blit(date_text, date_text_rect)
@@ -511,9 +542,7 @@ class chess_game():
 
         font = pygame.font.SysFont("Arial", 25)
         top_pos = 150
-        first_game = 0
-        last_game = 8
-        for i in range(first_game,last_game):
+        for i in range(self.first_game_DB, self.last_game_DB):
             if i == len(self.list_games):
                 break
 
