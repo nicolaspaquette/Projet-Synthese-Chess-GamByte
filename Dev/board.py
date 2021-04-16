@@ -540,7 +540,7 @@ class board:
 
         return sorted(all_valid_moves, reverse=True)
 
-    def evaluate_position(self, ai_color):
+    def evaluate_position(self, opponent_color):
         # for white, maximizing the score
         # for black, minimizing the score
         # for piece_square_tables: human player always on the bottom
@@ -560,19 +560,19 @@ class board:
             if white_major_pieces <= 2 and black_major_pieces <= 2:
                 self.is_endgame = True
 
-        ai_score = 0
+        opponent_score = 0
         human_score = 0
         for row in self.position:
             for square in row:
-                if square.get_piece() != None and square.get_piece().color == ai_color:
+                if square.get_piece() != None and square.get_piece().color == opponent_color:
                     if square.get_piece().name != "king":
-                        ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_table"][square.row][square.column]
+                        opponent_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_table"][square.row][square.column]
                     else:
                         if self.is_endgame:
-                            ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_end_game_table"][square.row][square.column]
+                            opponent_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_end_game_table"][square.row][square.column]
                         else:
-                            ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
-                elif  square.get_piece() != None and square.get_piece().color != ai_color:
+                            opponent_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
+                elif  square.get_piece() != None and square.get_piece().color != opponent_color:
                     if square.get_piece().name != "king":
                         human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_table"][square.row][square.column]
                     else:
@@ -582,12 +582,14 @@ class board:
                             human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
 
         # board_score = white_score - black_score
-        if ai_color == "white":
-            board_score = ai_score - human_score
+        if opponent_color == "white":
+            board_score = opponent_score - human_score
         else:
-            board_score =   human_score - ai_score
+            board_score =   human_score - opponent_score
 
+        print("BOARD SCORE: ", board_score)
         return board_score
+
 
     def register_move(self, piece_sign, final_row, final_column, is_capturing, is_castling, is_checking, is_checkmating):
         if self.human_player_color == "white":
@@ -617,6 +619,10 @@ class board:
 
         self.number_of_moves += 1
         board_information = []
+        if self.human_player_color == "white":
+            board_information.append(self.evaluate_position("black"))
+        else:
+            board_information.append(self.evaluate_position("white"))
         for row in self.position:
             for square in row:
                 piece_information = []

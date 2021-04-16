@@ -376,12 +376,21 @@ class chess_game():
         font = pygame.font.SysFont("Arial", 30)
 
         #letter/number of squares depending orientation of board
-        if self.selected_color == "white":
-            col_text = self.white_bottom_column_values
-            row_text = self.white_bottom_row_values
+        if not self.viewing_game_in_db:
+            if self.selected_color == "white":
+                col_text = self.white_bottom_column_values
+                row_text = self.white_bottom_row_values
+            else:
+                col_text = self.black_bottom_column_values
+                row_text = self.black_bottom_row_values
         else:
-            col_text = self.black_bottom_column_values
-            row_text = self.black_bottom_row_values
+            moves = list(self.current_game_in_bd_viewed["Moves"].keys())
+            if self.current_game_in_bd_viewed["Moves"][moves[0]][1][0] == "black":
+                col_text = self.white_bottom_column_values
+                row_text = self.white_bottom_row_values
+            else:
+                col_text = self.black_bottom_column_values
+                row_text = self.black_bottom_row_values
         
         for row in self.board.position:
 
@@ -413,8 +422,7 @@ class chess_game():
                         self.screen.blit(piece_image, (left, top, square_size, square_size))
                 else:
                     if not self.viewing_game_in_db:
-                        piece_list = list(self.board.game_information["Moves"].values())
-                        print(self.board.viewing_index)
+                        piece_list = list(self.board.game_information["Moves"].values())[self.viewing_index]
                         piece_position_at_index = piece_list[self.board.viewing_index]
                     else:
                         piece_list = list(self.current_game_in_bd_viewed["Moves"].values())
@@ -422,7 +430,7 @@ class chess_game():
 
                     #['color', 'piece', row, column]
                     for piece_info in piece_position_at_index:
-                        if square.row == piece_info[2] and square.column == piece_info[3]:
+                        if not isinstance(piece_info, int) and square.row == piece_info[2] and square.column == piece_info[3]:
                             path = str(self.path + piece_info[0] + "_" + piece_info[1] + ".png")
                             piece_image = pygame.image.load(path)
                             piece_image = pygame.transform.scale(piece_image, (square_size, square_size))
@@ -437,7 +445,7 @@ class chess_game():
                     letter_value += 1
 
                 left += square_size
-            
+
             top += square_size
             left = self.starting_pos_left
             if color_switch:
@@ -446,6 +454,14 @@ class chess_game():
             else:
                 color = self.orange
                 color_switch = True
+
+        if self.current_game_in_bd_viewed:
+            font = pygame.font.SysFont("Arial", 40)
+            piece_list = list(self.current_game_in_bd_viewed["Moves"].values())
+            piece_position_at_index = piece_list[self.viewing_index]
+            evaluation_text = font.render("Evaluation: " + str(piece_position_at_index[0]/100), True, self.black)
+            evaluation_text_rect = evaluation_text.get_rect(center=(800, 70))
+            self.screen.blit(evaluation_text, evaluation_text_rect)
 
         #show the list of moves done
         info_square_left = square_size*8 + self.starting_pos_left*2
