@@ -422,20 +422,20 @@ class chess_game():
                         self.screen.blit(piece_image, (left, top, square_size, square_size))
                 else:
                     if not self.viewing_game_in_db:
-                        piece_list = list(self.board.game_information["Moves"].values())[self.viewing_index]
-                        piece_position_at_index = piece_list[self.board.viewing_index]
+                        piece_list = list(self.board.game_information["Moves"].values())[self.board.viewing_index]
                     else:
-                        piece_list = list(self.current_game_in_bd_viewed["Moves"].values())
-                        piece_position_at_index = piece_list[self.viewing_index]
+                        piece_list = list(self.current_game_in_bd_viewed["Moves"].values())[self.viewing_index]
 
-                    #['color', 'piece', row, column]
-                    for piece_info in piece_position_at_index:
-                        if not isinstance(piece_info, int) and square.row == piece_info[2] and square.column == piece_info[3]:
-                            path = str(self.path + piece_info[0] + "_" + piece_info[1] + ".png")
-                            piece_image = pygame.image.load(path)
-                            piece_image = pygame.transform.scale(piece_image, (square_size, square_size))
-                            piece_image.convert()
-                            self.screen.blit(piece_image, (left, top, square_size, square_size))
+                    counter = 0
+                    for piece_info in piece_list:
+                        counter += 1
+                        if counter != 1:
+                            if square.row == piece_info[2] and square.column == piece_info[3]:
+                                path = str(self.path + piece_info[0] + "_" + piece_info[1] + ".png")
+                                piece_image = pygame.image.load(path)
+                                piece_image = pygame.transform.scale(piece_image, (square_size, square_size))
+                                piece_image.convert()
+                                self.screen.blit(piece_image, (left, top, square_size, square_size))
 
                 #draw column letter
                 if value == 7:
@@ -459,7 +459,7 @@ class chess_game():
             font = pygame.font.SysFont("Arial", 40)
             piece_list = list(self.current_game_in_bd_viewed["Moves"].values())
             piece_position_at_index = piece_list[self.viewing_index]
-            evaluation_text = font.render("Evaluation: " + str(piece_position_at_index[0]/100), True, self.black)
+            evaluation_text = font.render("Evaluation: " + str((piece_position_at_index[0][0]/100)), True, self.black)
             evaluation_text_rect = evaluation_text.get_rect(center=(800, 70))
             self.screen.blit(evaluation_text, evaluation_text_rect)
 

@@ -587,7 +587,6 @@ class board:
         else:
             board_score =   human_score - opponent_score
 
-        print("BOARD SCORE: ", board_score)
         return board_score
 
 
@@ -620,9 +619,9 @@ class board:
         self.number_of_moves += 1
         board_information = []
         if self.human_player_color == "white":
-            board_information.append(self.evaluate_position("black"))
+            board_information.append([self.evaluate_position("black")])
         else:
-            board_information.append(self.evaluate_position("white"))
+            board_information.append([self.evaluate_position("white")])
         for row in self.position:
             for square in row:
                 piece_information = []
