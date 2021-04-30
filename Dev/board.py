@@ -581,6 +581,22 @@ class board:
                         else:
                             human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
 
+        # during endgame, favoring positions where the opponent king is near the edges of the board (easier to checkmate)
+        if self.is_endgame:
+            near_border = [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[1,7],[2,7],[3,7],[4,7],[5,7],[6,7]]
+            one_square_away_border = [[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[2,1],[3,1],[4,1],[5,1],[2,6],[3,6],[4,6],[5,6]]
+            two_squares_away_border = [[2,2],[2,3],[2,4],[2,5],[5,2],[5,3],[5,4],[5,5],[3,2],[4,2],[3,5],[4,5]]
+
+            for row in self.position:
+                for square in row:
+                    if square.get_piece() != None and square.get_piece().color == self.opponent_color and square.get_piece().name == "king":
+                        if [square.row, square.column] in near_border:
+                            opponent_score += 100
+                        elif [square.row, square.column] in one_square_away_border:
+                            opponent_score += 50
+                        elif [square.row, square.column] in two_squares_away_border
+                            opponent_score += 25
+
         # board_score = white_score - black_score
         if opponent_color == "white":
             board_score = opponent_score - human_score
