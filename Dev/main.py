@@ -145,6 +145,7 @@ class chess_game():
                 self.show_game()
 
                 ##################################################### GAME LOOP ###################################################
+                
                 if not self.board.game_over and not self.viewing_game_in_db:
                     # human player turn
                     if self.player_turn == self.players[0]:
@@ -266,6 +267,7 @@ class chess_game():
                     if not self.game_saved:
                         self.save_game()
                         self.game_saved = True
+
                 ##################################################### GAME LOOP ###################################################
 
             elif self.is_history:
@@ -303,7 +305,6 @@ class chess_game():
                             if self.tick >= 6:
                                 self.page_chosen = False
                                 self.tick = 0
-
 
             self.window.blit(self.screen, (0,0))
             pygame.display.update()

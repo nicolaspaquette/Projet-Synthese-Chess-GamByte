@@ -59,7 +59,6 @@ class minimax(move_strategy):
         else:
             worse_evaluation = math.inf
             all_valid_moves = board.get_all_moves_possible("black")
-            #print("ALL THE MOVES", all_valid_moves, "\n")
             
             for move in all_valid_moves:
                 board.move_piece(move[1], move[2], move[3], move[4], [], True, False)
