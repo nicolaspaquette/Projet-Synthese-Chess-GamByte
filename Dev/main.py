@@ -284,7 +284,9 @@ class chess_game():
                                 self.select_color = False
                             elif "View Game" in button[0]:
                                 self.viewing_game_in_db = True
-                                game_id = int(button[0][-1])
+                                #game_id = int(button[0][-1])
+                                game_id = int(button[0].split()[-1])
+                                print("GAME ID", game_id)
                                 for game in self.list_games:
                                     if game["_id"] == game_id:
                                         self.current_game_in_bd_viewed = game
@@ -471,14 +473,19 @@ class chess_game():
         info_square_height = square_size*4
         pygame.draw.rect(self.screen, self.black, (info_square_left, info_square_top, info_square_width, info_square_height))
         
-        font = pygame.font.SysFont("Arial", 15)
         move_names = self.get_move_names()
+        font = pygame.font.SysFont("Arial", 15)
         top_pos = 10
+        nb_rows = 0
         for row in move_names:
+            nb_rows += 1
             names = font.render(row, True, self.white)
             names_rect = names.get_rect(center=(info_square_left + info_square_width/2, info_square_top + top_pos))
             self.screen.blit(names, names_rect)
             top_pos += 20
+            if nb_rows == 15:
+                break
+            
 
         #buttons to move through the list
         first_move_button = self.draw_button("<<", 30, self.white, self.light_black, info_square_left + 80, info_square_top - square_size/2, info_square_width/15, 5, False)

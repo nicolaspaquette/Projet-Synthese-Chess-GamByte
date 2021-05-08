@@ -13,6 +13,7 @@ from queen import queen
 from king import king
 from pawn import pawn
 import copy
+import math
 
 class board:
     def __init__(self, human_color):
@@ -193,10 +194,10 @@ class board:
                 is_checking = self.is_king_in_check(self.white_king_pos[0], self.white_king_pos[1])
 
             if moving_piece.color == "white":
-                opponent_color = "black"
+                ai_color = "black"
             else:
-                opponent_color = "white"
-            checkmate = self.is_king_in_checkmate(opponent_color)
+                ai_color = "white"
+            checkmate = self.is_king_in_checkmate(ai_color)
 
             if checkmate == "Checkmate":
                 is_checkmating = True
@@ -215,9 +216,9 @@ class board:
             piece = self.position[starting_row][starting_column].get_piece()
 
         if piece.color == "white":
-            opponent_color = "black"
+            ai_color = "black"
         elif piece.color == "black":
-            opponent_color = "white"
+            ai_color = "white"
 
         valid_positions = piece.get_valid_positions(self.position, starting_row, starting_column)
 
@@ -233,12 +234,12 @@ class board:
         #remove valid position if king is in check
         if piece.name == "king":
             if piece.color == "white":
-                opponent_color = "black"
+                ai_color = "black"
             else:
-                opponent_color = "white"
+                ai_color = "white"
 
             all_opponent_moves = []
-            all_opponent_moves = self.get_all_valid_positions(opponent_color)
+            all_opponent_moves = self.get_all_valid_positions(ai_color)
 
             positions_to_remove = []
             for position in valid_positions:
@@ -330,11 +331,11 @@ class board:
         all_opponent_moves = []
 
         if king.color == "white":
-            opponent_color = "black"
+            ai_color = "black"
         else:
-            opponent_color = "white"
+            ai_color = "white"
 
-        all_opponent_moves = self.get_all_valid_positions(opponent_color)
+        all_opponent_moves = self.get_all_valid_positions(ai_color)
 
         #verify if king is attacked
         if (king_row, king_column) in all_opponent_moves:
@@ -539,12 +540,13 @@ class board:
 
         return sorted(all_valid_moves, reverse=False)
 
-    def evaluate_position(self, opponent_color):
+    def evaluate_position(self, ai_color):
         # for white, maximizing the score
         # for black, minimizing the score
         # for piece_square_tables: human player always on the bottom
 
         # for the king, endgame begins when players have maximum two majors pieces (knight, bishop, rook, queen) and any amount of pawns
+        self.is_endgame = False
         if not self.is_endgame:
             white_major_pieces = 0
             black_major_pieces = 0
@@ -559,19 +561,19 @@ class board:
             if white_major_pieces <= 2 and black_major_pieces <= 2:
                 self.is_endgame = True
 
-        opponent_score = 0
+        ai_score = 0
         human_score = 0
         for row in self.position:
             for square in row:
-                if square.get_piece() != None and square.get_piece().color == opponent_color:
+                if square.get_piece() != None and square.get_piece().color == ai_color:
                     if square.get_piece().name != "king":
-                        opponent_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_table"][square.row][square.column]
+                        ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_table"][square.row][square.column]
                     else:
                         if self.is_endgame:
-                            opponent_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_end_game_table"][square.row][square.column]
+                            ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_end_game_table"][square.row][square.column]
                         else:
-                            opponent_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
-                elif  square.get_piece() != None and square.get_piece().color != opponent_color:
+                            ai_score += square.get_piece().value + self.piece_square_table["top_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
+                elif  square.get_piece() != None and square.get_piece().color != ai_color:
                     if square.get_piece().name != "king":
                         human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_table"][square.row][square.column]
                     else:
@@ -581,20 +583,31 @@ class board:
                             human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
 
         # during endgame, favoring positions where the opponent king is near the edges of the board (easier to checkmate)
+        # during endgame, the ai king near the human king may help to deliver checkmate
         if self.is_endgame:
             near_border = [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[7,7],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[1,7],[2,7],[3,7],[4,7],[5,7],[6,7]]
             one_square_away_border = [[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],[2,1],[3,1],[4,1],[5,1],[2,6],[3,6],[4,6],[5,6]]
             two_squares_away_border = [[2,2],[2,3],[2,4],[2,5],[5,2],[5,3],[5,4],[5,5],[3,2],[4,2],[3,5],[4,5]]
 
-            for row in self.position:
-                for square in row:
-                    if square.get_piece() != None and square.get_piece().color == opponent_color and square.get_piece().name == "king":
-                        if [square.row, square.column] in near_border:
-                            opponent_score += 100
-                        elif [square.row, square.column] in one_square_away_border:
-                            opponent_score += 50
-                        elif [square.row, square.column] in two_squares_away_border:
-                            opponent_score += 25
+            if ai_color == "white":
+                if [self.black_king_pos[0], self.black_king_pos[1]] in near_border:
+                    ai_score += 20
+                elif [self.black_king_pos[0], self.black_king_pos[1]] in one_square_away_border:
+                    ai_score += 10
+                elif [self.black_king_pos[0], self.black_king_pos[1]] in two_squares_away_border:
+                    ai_score += 5
+            else:
+                if [self.white_king_pos[0], self.white_king_pos[1]] in near_border:
+                    ai_score += 20
+                elif [self.white_king_pos[0], self.white_king_pos[1]] in one_square_away_border:
+                    ai_score += 10
+                elif [self.white_king_pos[0], self.white_king_pos[1]] in two_squares_away_border:
+                    ai_score += 5
+
+            #the closer the distance between the 2 kings, the better chances to help with the checkmate (Pythagoras)
+            distance = math.sqrt(pow((self.white_king_pos[0] - self.black_king_pos[0]),2) + pow((self.white_king_pos[1] - self.black_king_pos[1]),2))
+            distance_score = (1/distance) * 10
+            ai_score += distance_score
 
         #king safety: favoring position pawns in front of king, usually more safe to have pawns blocking checks
         if self.human_player_color == "white":
@@ -605,13 +618,13 @@ class board:
                 if self.white_king_pos[0] + row >= 0 and self.white_king_pos[1] + column >= 0 and self.white_king_pos[1] + column <= 7:
                     square = self.position[self.white_king_pos[0] + row][self.white_king_pos[1] + column]
                     if square.get_piece() != None and square.get_piece().name == "pawn" and square.get_piece().color == "white":
-                        human_score += 25
+                        human_score += 10
 
             for row, column in black_pos:
                 if self.white_king_pos[0] + row <= 7 and self.black_king_pos[1] + column >= 0 and self.black_king_pos[1] + column <= 7:
                     square = self.position[self.black_king_pos[0] + row][self.black_king_pos[1] + column]
                     if square.get_piece() != None and square.get_piece().name == "pawn" and square.get_piece().color == "black":
-                        opponent_score += 25
+                        ai_score += 10
         else:
             black_pos = [(-1,-1), (-1,0),(-1,1)]
             white_pos = [(1,-1), (1,0),(1,1)]
@@ -620,21 +633,37 @@ class board:
                 if self.black_king_pos[0] + row >= 0 and self.black_king_pos[1] + column >= 0 and self.black_king_pos[1] + column <= 7:
                     square = self.position[self.black_king_pos[0] + row][self.black_king_pos[1] + column]
                     if square.get_piece() != None and square.get_piece().name == "pawn" and square.get_piece().color == "black":
-                        human_score += 25
+                        human_score += 10
 
             for row, column in black_pos:
                 if self.white_king_pos[0] + row <= 7 and self.white_king_pos[1] + column >= 0 and self.white_king_pos[1] + column <= 7:
                     square = self.position[self.white_king_pos[0] + row][self.white_king_pos[1] + column]
                     if square.get_piece() != None and square.get_piece().name == "pawn" and square.get_piece().color == "white":
-                        opponent_score += 25
+                        ai_score += 10
 
         #pawn chains: favoring pawn structure that are in a 'W' shape, protecting eachother
+        pawn_positions = [(-1,-1),(-1,1),(1,-1),(1,1)]
+
+        for row in self.position:
+            for square in row:
+                if square.get_piece() != None and square.get_piece().name == "pawn":
+                    for row, column in pawn_positions:
+                        if square.row + row >= 0 and square.row + row <= 7 and square.column + column >= 0 and square.column + column <= 7:
+                            piece_square = self.position[square.row + row][square.column + column].get_piece()
+                            if piece_square != None and piece_square.name == "pawn" and piece_square.color == square.get_piece().color:
+                                if piece_square.color == ai_color:
+                                    ai_score += 10
+                                else:
+                                    human_score += 10
+
+        # if the opponent has no moves (aka checkmate), favor this position greatly
+
 
         # board_score = white_score - black_score
-        if opponent_color == "white":
-            board_score = opponent_score - human_score
+        if ai_color == "white":
+            board_score = ai_score - human_score
         else:
-            board_score =   human_score - opponent_score
+            board_score =   human_score - ai_score
 
         return board_score
 
