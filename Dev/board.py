@@ -656,8 +656,17 @@ class board:
                                 else:
                                     human_score += 10
 
-        # if the opponent has no moves (aka checkmate), favor this position greatly
-
+        # if the opponent is in checkmate, favor this position greatly
+        if ai_color == "white":
+            if self.is_king_in_checkmate("black"):
+                ai_score += 50000
+            if self.is_king_in_checkmate("white"):
+                ai_score -= 50000
+        else:
+            if self.is_king_in_checkmate("white"):
+                ai_score += 50000
+            if self.is_king_in_checkmate("black"):
+                ai_score -= 50000
 
         # board_score = white_score - black_score
         if ai_color == "white":
