@@ -284,9 +284,7 @@ class chess_game():
                                 self.select_color = False
                             elif "View Game" in button[0]:
                                 self.viewing_game_in_db = True
-                                #game_id = int(button[0][-1])
                                 game_id = int(button[0].split()[-1])
-                                print("GAME ID", game_id)
                                 for game in self.list_games:
                                     if game["_id"] == game_id:
                                         self.current_game_in_bd_viewed = game
@@ -485,7 +483,6 @@ class chess_game():
             top_pos += 20
             if nb_rows == 15:
                 break
-            
 
         #buttons to move through the list
         first_move_button = self.draw_button("<<", 30, self.white, self.light_black, info_square_left + 80, info_square_top - square_size/2, info_square_width/15, 5, False)

@@ -9,7 +9,7 @@ class minimax(move_strategy):
         self.board = board
         self.color = ai_color
         self.number_of_searches = 0
-        self.depth = 2
+        self.depth = 3
 
     def select_move(self):
         depth = self.depth
@@ -24,7 +24,7 @@ class minimax(move_strategy):
         self.number_of_searches = 0
         start_time = time.time()
         score, move = self.minimax_search(self.board, depth, alpha, beta, maximizing_player)
-        print("time to search:", time.time() - start_time, "seconds")
+        print("\ntime to search:", time.time() - start_time, "seconds")
         print("number of searches:", self.number_of_searches)
 
         return score, move
@@ -32,8 +32,16 @@ class minimax(move_strategy):
     def minimax_search(self, board, depth, alpha, beta, maximizing_player):
         self.number_of_searches += 1
 
-        if depth == 0 or board.is_game_over():
-            return board.evaluate_position(self.color), None
+        if depth == 0:
+            return board.evaluate_position(self.color, None), None
+        else:
+            game_over_result = board.is_game_over()
+            if game_over_result == "white":
+                return board.evaluate_position(self.color, "white"), None
+            elif game_over_result == "black":
+                return board.evaluate_position(self.color, "black"), None
+            elif game_over_result == "stalemate":
+                return board.evaluate_position(self.color, "stalemate"), None
 
         # white player side: maximizing
         if maximizing_player:
