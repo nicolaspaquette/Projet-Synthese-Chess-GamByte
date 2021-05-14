@@ -44,6 +44,7 @@ class board:
         self.black_bottom_row_values = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5", 5: "6", 6: "7", 7: "8"}
 
         self.viewing_index = 0
+        self.upgrading_pawn = False
 
     def initialize_board(self):
         position = []
@@ -630,7 +631,7 @@ class board:
             distance_score = (1/distance) * 5
             ai_score += distance_score
 
-        #king safety: favoring position pawns in front of king, usually more safe to have pawns blocking checks
+        ##king safety: favoring position pawns in front of king, usually more safe to have pawns blocking checks
         if self.human_player_color == "white":
             white_pos = [(-1,-1), (-1,0),(-1,1)]
             black_pos = [(1,-1), (1,0),(1,1)]
@@ -672,9 +673,9 @@ class board:
                             piece_square = self.position[square.row + row][square.column + column].get_piece()
                             if piece_square != None and piece_square.name == "pawn" and piece_square.color == square.get_piece().color:
                                 if piece_square.color == ai_color:
-                                    ai_score += 5
+                                    ai_score += 2
                                 else:
-                                    human_score += 5
+                                    human_score += 2
 
         # board_score = white_score - black_score
         if ai_color == "white":

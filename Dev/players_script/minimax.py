@@ -32,16 +32,9 @@ class minimax(move_strategy):
     def minimax_search(self, board, depth, alpha, beta, maximizing_player):
         self.number_of_searches += 1
 
-        if depth == 0:
-            return board.evaluate_position(self.color, None), None
-        else:
-            game_over_result = board.is_game_over()
-            if game_over_result == "white":
-                return board.evaluate_position(self.color, "white"), None
-            elif game_over_result == "black":
-                return board.evaluate_position(self.color, "black"), None
-            elif game_over_result == "stalemate":
-                return board.evaluate_position(self.color, "stalemate"), None
+        game_over_result = board.is_game_over()
+        if depth == 0 or game_over_result != None:
+            return board.evaluate_position(self.color, game_over_result), None
 
         # white player side: maximizing
         if maximizing_player:
