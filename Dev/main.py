@@ -157,7 +157,7 @@ class chess_game():
                 if not self.board.game_over and not self.viewing_game_in_db:
                     # human player turn
                     if self.player_turn == self.players[0]:
-                        if self.mouse != None:
+                        if self.mouse != None and not self.board.upgrading_pawn:
                             square_size = self.board.position[0][0].size
                             if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
                                 if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
@@ -192,7 +192,7 @@ class chess_game():
                     else:
                         # human opponent
                         if self.game_mode == "Human":
-                            if self.mouse != None:
+                            if self.mouse != None and not self.board.upgrading_pawn:
                                 square_size = self.board.position[0][0].size
                                 if self.mouse[0] >= self.starting_pos_left and self.mouse[0] <= self.starting_pos_left + (8 *  square_size):
                                     if self.mouse[1] >= self.starting_pos_left and self.mouse[1] <= self.starting_pos_top + (8 *  square_size):
@@ -239,14 +239,14 @@ class chess_game():
                             
                             if button[0] == "<<":
                                 if not self.viewing_game_in_db:
-                                    if len(self.board.game_information["Moves"]) > 0:
+                                    if len(self.board.game_information["Moves"]) > 1:
                                         self.viewing_current_move = False
                                         self.board.viewing_index = 0
                                 else:
                                     self.viewing_index = 0
                             elif button[0] == "<":
                                 if not self.viewing_game_in_db:
-                                    if len(self.board.game_information["Moves"]) > 0:
+                                    if len(self.board.game_information["Moves"]) > 1:
                                         self.viewing_current_move = False
                                         if self.board.viewing_index > 0:
                                             self.board.viewing_index -= 1
@@ -255,9 +255,8 @@ class chess_game():
                                         self.viewing_index -= 1
                             elif button[0] == ">":
                                 if not self.viewing_game_in_db:
-                                    self.viewing_current_move = False
                                     if len(self.board.game_information["Moves"]) > 0 and self.board.viewing_index < len(self.board.game_information["Moves"]) - 1:
-                                        print("NOOOOOOOOO")
+                                        self.viewing_current_move = False
                                         self.board.viewing_index += 1
                                     if len(self.board.game_information["Moves"]) > 0 and self.board.viewing_index == len(self.board.game_information["Moves"]) - 1:
                                         self.viewing_current_move = True
