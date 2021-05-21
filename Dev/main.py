@@ -22,7 +22,7 @@ class chess_game():
         self.screen = self.screen.convert()
         self.fps = 5
 
-        self.grey = (125, 125, 125)
+        self.gray = (125, 125, 125)
         self.black = (0, 0, 0)
         self.light_black = (50, 50, 50)
         self.white = (255, 255, 255)
@@ -73,6 +73,10 @@ class chess_game():
         self.game_history_DAO = game_history_DAO()
         self.list_games = []
 
+        self.pawn_upgrade_chosen = None
+        self.played_row = None
+        self.played_column = None
+
     def main(self):
         is_running = True
         clock = pygame.time.Clock()
@@ -107,6 +111,7 @@ class chess_game():
                                 self.is_menu = False
                                 self.is_game = True
                                 self.viewing_game_in_db = False
+                                self.current_game_in_bd_viewed = None
                             elif button[0] == "Random":
                                 random = randrange(10)
                                 if random % 2 == 0:
@@ -116,11 +121,13 @@ class chess_game():
                                 self.is_menu = False
                                 self.is_game = True
                                 self.viewing_game_in_db = False
+                                self.current_game_in_bd_viewed = None
                             elif button[0] == "Black":
                                 self.selected_color = "black"
                                 self.is_menu = False
                                 self.is_game = True
                                 self.viewing_game_in_db = False
+                                self.current_game_in_bd_viewed = None
                             elif button[0] == "Game History":
                                 self.is_menu = False
                                 self.is_game = False
@@ -131,6 +138,7 @@ class chess_game():
                                 self.last_game_DB = 7
                                 self.page_chosen = False
                                 self.tick = 0
+                                self.viewing_game_in_db = True
 
             elif self.is_game:
                 if not self.are_players_initialized:
@@ -167,8 +175,15 @@ class chess_game():
                                             self.player_turn.valid_positions = self.player_turn.play_move(row, column)
                                             self.player_turn.starting_row = None
                                             self.player_turn.starting_column = None
-                                            self.change_player_turn()
-                                            self.show_game()
+
+                                            self.played_row = row
+                                            self.played_column = column
+
+                                            if not self.board.upgrading_pawn:
+                                                    self.played_row = None
+                                                    self.played_column = None
+                                                    self.change_player_turn()
+                                                    self.show_game()
 
                         #show possible moves
                         if self.player_turn == self.players[0]:
@@ -195,8 +210,15 @@ class chess_game():
                                                 self.player_turn.valid_positions = self.player_turn.play_move(row, column)
                                                 self.player_turn.starting_row = None
                                                 self.player_turn.starting_column = None
-                                                self.change_player_turn()
-                                                self.show_game()
+
+                                                self.played_row = row
+                                                self.played_column = column
+
+                                                if not self.board.upgrading_pawn:
+                                                    self.played_row = None
+                                                    self.played_column = None
+                                                    self.change_player_turn()
+                                                    self.show_game()
 
                             #show possible moves
                             if self.player_turn == self.players[1]:
@@ -234,17 +256,19 @@ class chess_game():
                             elif button[0] == ">":
                                 if not self.viewing_game_in_db:
                                     self.viewing_current_move = False
-                                    if self.board.viewing_index < len(self.board.game_information["Moves"]) - 1:
+                                    if len(self.board.game_information["Moves"]) > 0 and self.board.viewing_index < len(self.board.game_information["Moves"]) - 1:
+                                        print("NOOOOOOOOO")
                                         self.board.viewing_index += 1
-                                    if self.board.viewing_index == len(self.board.game_information["Moves"]) - 1:
+                                    if len(self.board.game_information["Moves"]) > 0 and self.board.viewing_index == len(self.board.game_information["Moves"]) - 1:
                                         self.viewing_current_move = True
                                 else:
-                                    if self.viewing_index < len(self.current_game_in_bd_viewed["Moves"]) - 1 :
+                                    if len(self.current_game_in_bd_viewed["Moves"]) > 0 and self.viewing_index < len(self.current_game_in_bd_viewed["Moves"]) - 1 :
                                         self.viewing_index += 1
                             elif button[0] == ">>":
                                 if not self.viewing_game_in_db:
-                                    self.viewing_current_move = True
-                                    self.board.viewing_index = len(self.board.game_information["Moves"]) - 1
+                                    if len(self.board.game_information["Moves"]) > 0:
+                                        self.viewing_current_move = True
+                                        self.board.viewing_index = len(self.board.game_information["Moves"]) - 1
                                 else:
                                     self.viewing_index = len(self.current_game_in_bd_viewed["Moves"]) - 1
                             elif button[0] == "Forfeit Game":
@@ -262,6 +286,23 @@ class chess_game():
                                 self.game_started = False
                                 self.viewing_index = 0
                                 self.select_color = False
+                            elif button[0] == "Queen":
+                                self.pawn_upgrade_chosen = "queen"
+                            elif button[0] == "Rook":
+                                self.pawn_upgrade_chosen = "rook"
+                            elif button[0] == "Bishop":
+                                self.pawn_upgrade_chosen = "bishop"
+                            elif button[0] == "Knight":
+                                self.pawn_upgrade_chosen = "knight"
+
+                if self.board.upgrading_pawn and self.pawn_upgrade_chosen != None:
+                    self.board.upgrade_pawn(self.played_row, self.played_column, self.board.upgrading_pawn_color, self.pawn_upgrade_chosen)
+                    self.board.upgrading_pawn = False
+                    self.pawn_upgrade_chosen = None
+                    self.played_row = None
+                    self.played_column = None
+                    self.change_player_turn()
+                    self.show_game()
 
                 if self.board.game_over and not self.viewing_game_in_db:
                     if not self.game_saved:
@@ -320,7 +361,7 @@ class chess_game():
 
     def show_menu(self):
         pygame.display.set_caption("Main Menu")
-        self.screen.fill(self.grey)
+        self.screen.fill(self.gray)
 
         #titles
         font = pygame.font.SysFont("Arial", 75)
@@ -363,7 +404,7 @@ class chess_game():
 
     def show_game(self):
         pygame.display.set_caption("Game")
-        self.screen.fill(self.grey)
+        self.screen.fill(self.gray)
 
         left = self.starting_pos_left
         top = self.starting_pos_top
@@ -460,7 +501,7 @@ class chess_game():
             font = pygame.font.SysFont("Arial", 40)
             piece_list = list(self.current_game_in_bd_viewed["Moves"].values())
             piece_position_at_index = piece_list[self.viewing_index]
-            evaluation_text = font.render("Evaluation: " + str((piece_position_at_index[0][0]/100)), True, self.black)
+            evaluation_text = font.render("Evaluation: " + str((piece_position_at_index[0][0])), True, self.black)
             evaluation_text_rect = evaluation_text.get_rect(center=(800, 70))
             self.screen.blit(evaluation_text, evaluation_text_rect)
 
@@ -528,9 +569,34 @@ class chess_game():
             board_state_text_rect = board_state_text.get_rect(center=(info_square_left + info_square_width/2, info_square_top + info_square_height * 1.4))
             self.screen.blit(board_state_text, board_state_text_rect)
 
+        if self.board.upgrading_pawn and not self.viewing_game_in_db:
+        #if 1 == 1 and not self.viewing_game_in_db:
+            upgrade_left = info_square_left-30
+            upgrade_top = 10
+            upgrade_width = info_square_width+60
+            upgrade_height = 120
+
+            pygame.draw.rect(self.screen, self.gray, (upgrade_left, upgrade_top, upgrade_width, upgrade_height))
+            upgrade_pawn_text = font.render("Upgrade pawn", True, self.black)
+            upgrade_pawn_text_rect = upgrade_pawn_text.get_rect(center=(upgrade_left + upgrade_width/2, 25))
+            self.screen.blit(upgrade_pawn_text, upgrade_pawn_text_rect)
+
+            queen_button = self.draw_button("Queen", 25, self.white, self.black, upgrade_left + 65, upgrade_top + upgrade_height/2 + 15, 12, 10, False)
+            self.game_button_positions.append(queen_button)
+
+            rook_button = self.draw_button("Rook", 25, self.white, self.black, upgrade_left + upgrade_width/4 + 67, upgrade_top + upgrade_height/2 + 15, 16, 10, False)
+            self.game_button_positions.append(rook_button)
+
+            bishop_button = self.draw_button("Bishop", 25, self.white, self.black, upgrade_left + upgrade_width/4*2 + 72, upgrade_top + upgrade_height/2 + 15, 10, 10, False)
+            self.game_button_positions.append(bishop_button)
+
+            knight_button = self.draw_button("Knight", 25, self.white, self.black, upgrade_left + upgrade_width/4*3 + 65, upgrade_top + upgrade_height/2 + 15, 10, 10, False)
+            self.game_button_positions.append(knight_button)
+
+            
     def show_history(self):
         pygame.display.set_caption("History")
-        self.screen.fill(self.grey)
+        self.screen.fill(self.gray)
 
         return_menu_button = self.draw_button("Main Menu", 30, self.white, self.black, 1100, 45, 20, 10, False)
         self.history_button_positions.append(return_menu_button)

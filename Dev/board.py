@@ -45,6 +45,7 @@ class board:
 
         self.viewing_index = 0
         self.upgrading_pawn = False
+        self.upgrading_pawn_color = None
 
     def initialize_board(self):
         position = []
@@ -169,10 +170,14 @@ class board:
         if not is_verifying and not moving_piece.as_moved:
             moving_piece.as_moved = True
 
-        #pawn promotion to queen
-        if (moving_piece.name == "pawn" and moving_piece.initialized_row == 6 and final_row == 0) or moving_piece.name == "pawn" and moving_piece.initialized_row == 1 and final_row == 7:
-            self.position[final_row][final_column].remove_piece()
-            self.position[final_row][final_column].add_piece(queen(moving_piece.color))
+        #pawn promotion to queen automatically for AI
+        if (moving_piece.name == "pawn" and moving_piece.initialized_row == 6 and final_row == 0) or (moving_piece.name == "pawn" and moving_piece.initialized_row == 1 and final_row == 7):
+            if not ai_play_move and not is_verifying: 
+                self.upgrading_pawn = True
+                self.upgrading_pawn_color = moving_piece.color
+            else:
+                self.position[final_row][final_column].remove_piece()
+                self.position[final_row][final_column].add_piece(queen(moving_piece.color))
 
         self.list_moves_done.append(last_move_done)
 
@@ -206,6 +211,17 @@ class board:
             self.register_move(moving_piece.sign, final_row, final_column, is_capturing, is_castling, is_checking, is_checkmating)
 
         return valid_positions
+
+    def upgrade_pawn(self, row, column, color, piece_name):
+        self.position[row][column].remove_piece()
+        if piece_name == "queen":
+            self.position[row][column].add_piece(queen(color))
+        elif piece_name == "knight":
+            self.position[row][column].add_piece(knight(color))
+        elif piece_name == "rook":
+            self.position[row][column].add_piece(rook(color))
+        elif piece_name == "bishop":
+            self.position[row][column].add_piece(bishop(color))
 
     def get_valid_piece_positions(self, starting_row, starting_column, is_verifying):
         self.get_kings_positions()
@@ -683,17 +699,17 @@ class board:
         else:
             board_score = human_score - ai_score
 
-        return round(board_score,2)
+        return board_score
 
 
     def register_move(self, piece_sign, final_row, final_column, is_capturing, is_castling, is_checking, is_checkmating):
         if self.human_player_color == "white":
             if is_capturing:
-                move_name = piece_sign + "x" + self.white_bottom_column_values[final_column] + self.white_bottom_row_values[final_row]
+                move_name = piece_sign + "x" + self.white_bottom_column_values[final_column].lower() + self.white_bottom_row_values[final_row]
             elif is_castling:
                 move_name = "O-O"
             else:
-                move_name = piece_sign + self.white_bottom_column_values[final_column] + self.white_bottom_row_values[final_row]
+                move_name = piece_sign + self.white_bottom_column_values[final_column].lower() + self.white_bottom_row_values[final_row]
 
             if is_checkmating:
                 move_name += "#"
@@ -701,11 +717,11 @@ class board:
                 move_name += "+"
         else:
             if is_capturing:
-                move_name = piece_sign + "x" + self.black_bottom_column_values[final_column] + self.black_bottom_row_values[final_row]
+                move_name = piece_sign + "x" + self.black_bottom_column_values[final_column].lower() + self.black_bottom_row_values[final_row]
             elif is_castling:
                 move_name = "O-O"
             else:
-                move_name = piece_sign + self.black_bottom_column_values[final_column] + self.black_bottom_row_values[final_row]
+                move_name = piece_sign + self.black_bottom_column_values[final_column].lower() + self.black_bottom_row_values[final_row]
 
             if is_checkmating:
                 move_name += "#"
@@ -715,9 +731,9 @@ class board:
         self.number_of_moves += 1
         board_information = []
         if self.human_player_color == "white":
-            board_information.append([self.evaluate_position("black", None)])
+            board_information.append([round(self.evaluate_position("black", None)/100,2)])
         else:
-            board_information.append([self.evaluate_position("white", None)])
+            board_information.append([round(self.evaluate_position("white", None)/100,2)])
         for row in self.position:
             for square in row:
                 piece_information = []
