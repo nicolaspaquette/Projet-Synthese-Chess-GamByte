@@ -40,6 +40,7 @@ class minimax(move_strategy):
         if maximizing_player:
             best_evaluation = -math.inf
             all_valid_moves = board.get_all_moves_possible("white")
+            move_chosen = [0,0,0,0]
 
             for move in all_valid_moves:
                 board.move_piece(move[1], move[2], move[3], move[4], [], True, False)
@@ -60,6 +61,7 @@ class minimax(move_strategy):
         else:
             worse_evaluation = math.inf
             all_valid_moves = board.get_all_moves_possible("black")
+            move_chosen = [0,0,0,0]
             
             for move in all_valid_moves:
                 board.move_piece(move[1], move[2], move[3], move[4], [], True, False)

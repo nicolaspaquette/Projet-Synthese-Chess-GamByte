@@ -620,6 +620,36 @@ class board:
                         else:
                             human_score += square.get_piece().value + self.piece_square_table["bottom_" + square.get_piece().name + "_middle_game_table"][square.row][square.column]
 
+                #having a piece captured by a pawn is usually bad
+                piece = square.get_piece()
+                if piece != None:
+                    if piece.initialized_row == 7:
+                        if square.row > 0 and square.column > 0:
+                            if self.position[square.row - 1][square.column - 1].get_piece() != None and self.position[square.row - 1][square.column - 1].get_piece().color != piece.color and self.position[square.row - 1][square.column - 1].get_piece().name == "pawn":
+                                if piece.color == self.human_player_color:
+                                    human_score -= piece.value
+                                else:
+                                    ai_score -= piece.value
+                        if square.row > 0 and square.column < 7:
+                            if self.position[square.row - 1][square.column + 1].get_piece() != None and self.position[square.row - 1][square.column + 1].get_piece().color != piece.color and self.position[square.row - 1][square.column + 1].get_piece().name == "pawn":
+                                if piece.color == self.human_player_color:
+                                    human_score -= piece.value
+                                else:
+                                    ai_score -= piece.value
+                    elif piece.initialized_row == 0:
+                        if square.row < 7 and square.column > 0:
+                            if self.position[square.row + 1][square.column - 1].get_piece() != None and self.position[square.row + 1][square.column - 1].get_piece().color != piece.color and self.position[square.row + 1][square.column - 1].get_piece().name == "pawn":
+                                if piece.color == self.human_player_color:
+                                    human_score -= piece.value
+                                else:
+                                    ai_score -= piece.value
+                        if square.row < 7 and square.column < 7:
+                            if self.position[square.row + 1][square.column + 1].get_piece() != None and self.position[square.row + 1][square.column + 1].get_piece().color != piece.color and self.position[square.row + 1][square.column + 1].get_piece().name == "pawn":
+                                if piece.color == self.human_player_color:
+                                    human_score -= piece.value
+                                else:
+                                    ai_score -= piece.value
+
         # during endgame, favoring positions where the opponent king is near the edges of the board (easier to checkmate)
         # during endgame, the ai king near the human king may help to deliver checkmate
         if self.is_endgame:
@@ -671,13 +701,13 @@ class board:
                 if self.black_king_pos[0] + row >= 0 and self.black_king_pos[1] + column >= 0 and self.black_king_pos[1] + column <= 7:
                     square = self.position[self.black_king_pos[0] + row][self.black_king_pos[1] + column]
                     if square.get_piece() != None and square.get_piece().name == "pawn" and square.get_piece().color == "black":
-                        human_score += 5
+                        human_score += 10
 
             for row, column in black_pos:
                 if self.white_king_pos[0] + row <= 7 and self.white_king_pos[1] + column >= 0 and self.white_king_pos[1] + column <= 7:
                     square = self.position[self.white_king_pos[0] + row][self.white_king_pos[1] + column]
                     if square.get_piece() != None and square.get_piece().name == "pawn" and square.get_piece().color == "white":
-                        ai_score += 5
+                        ai_score += 10
 
         #pawn chains: favoring pawn structure that are in a 'W' shape, protecting eachother
         pawn_positions = [(-1,-1),(-1,1),(1,-1),(1,1)]
@@ -689,9 +719,9 @@ class board:
                             piece_square = self.position[square.row + row][square.column + column].get_piece()
                             if piece_square != None and piece_square.name == "pawn" and piece_square.color == square.get_piece().color:
                                 if piece_square.color == ai_color:
-                                    ai_score += 2
+                                    ai_score += 5
                                 else:
-                                    human_score += 2
+                                    human_score += 5
 
         # board_score = white_score - black_score
         if ai_color == "white":
