@@ -384,7 +384,7 @@ class board:
 
         if len(king_positions) == 0 and len(valid_positions) == 0 and check:
             return "Checkmate"
-        elif len(king_positions) == 0 and len(valid_positions) == 0 and not check:
+        elif len(king_positions) == 0 and len(valid_positions) == 0 and not check and self.color_to_play == color:
             return "Stalemate"
         else:
             return False
