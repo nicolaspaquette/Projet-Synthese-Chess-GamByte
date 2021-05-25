@@ -411,10 +411,12 @@ class board:
 
     def en_passant_verification(self, moving_piece, starting_row, starting_column, final_row, final_column, move_done, is_verifying):
         if not is_verifying:
-            if self.en_passant_piece != moving_piece and self.en_passant_piece != None:
-                if self.en_passant_piece.color == moving_piece.color:
-                    self.en_passant_piece.can_be_captured_en_passant = False
-                    self.en_passant_piece = None
+            self.en_passant_piece = None
+            for row in self.position:
+                for square in row:
+                    piece = square.get_piece()
+                    if piece != None and piece.name == "pawn" and piece.color == moving_piece.color:
+                        piece.can_be_captured_en_passant = False
 
             if moving_piece.name == "pawn" and starting_row == moving_piece.initialized_row and (final_row - starting_row == 2 or final_row - starting_row == -2):
                 moving_piece.can_be_captured_en_passant = True
@@ -422,7 +424,7 @@ class board:
 
         if final_row < 7 and final_row > 0 and final_column < 7 and final_column > 0:
             if self.position[final_row][final_column].get_piece() != None and (self.position[final_row - 1][final_column].get_piece() != None or self.position[final_row + 1][final_column].get_piece() != None):
-                if moving_piece.initialized_row == 2:
+                if moving_piece.initialized_row == 1:
                     if self.position[final_row - 1][final_column].get_piece() != None:
                         if self.position[final_row][final_column].get_piece().name == "pawn" and self.position[final_row - 1][final_column].get_piece().name == "pawn":
                             if self.position[final_row][final_column].get_piece().color != self.position[final_row - 1][final_column].get_piece().color and self.position[final_row - 1][final_column].get_piece().can_be_captured_en_passant:
@@ -566,7 +568,7 @@ class board:
         # for black, minimizing the score
         # for piece_square_tables: human player always on the bottom
 
-        # for the king, endgame begins when players have maximum two majors pieces (knight, bishop, rook, queen) and any amount of pawns
+        # for the king, endgame begins when players have maximum 2 majors pieces (knight, bishop, rook, queen) and any amount of pawns
         self.is_endgame = False
         if not self.is_endgame:
             white_major_pieces = 0
@@ -601,6 +603,7 @@ class board:
             elif player_checkmated == "stalemate":
                 ai_score -= 25000
 
+        #add the value of the piece square table for all pieces
         for row in self.position:
             for square in row:
                 if square.get_piece() != None and square.get_piece().color == ai_color:
@@ -677,7 +680,7 @@ class board:
             distance_score = (1/distance) * 5
             ai_score += distance_score
 
-        ##king safety: favoring position pawns in front of king, usually more safe to have pawns blocking checks
+        #king safety: favoring position pawns in front of king, usually more safe to have pawns blocking checks
         if self.human_player_color == "white":
             white_pos = [(-1,-1), (-1,0),(-1,1)]
             black_pos = [(1,-1), (1,0),(1,1)]
