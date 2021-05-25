@@ -21,7 +21,7 @@ class ai(player):
         else:
             self.board.get_kings_positions()
 
-            #plays the move to see if its good or not
+            #plays the move to see if its good or not and gets the score
             move = self.playstyle[self.playstyle_index]
             valid_positions = self.board.move_piece(move[0], move[1], move[2], move[3], [], True, True)
 
@@ -29,10 +29,7 @@ class ai(player):
             score = self.board.evaluate_position(self.color, game_over_result)
             self.board.undo_last_move_done()
 
-            print("present score", self.previous_play_score)
-            print("new move score", score)
-
-            # if the move is good, continue the opening. Otherwise, find a new move
+            # if the move is good, continue the opening. Otherwise, find a new move (+- 30 for variation purposes but still detects good vs bad moves)
             if (self.color == "white" and score >= self.previous_play_score - 30) or (self.color == "black" and score <= self.previous_play_score + 30): 
                 valid_positions = self.board.move_piece(move[0], move[1], move[2], move[3], [], False, True)
                 self.playstyle_index += 1
